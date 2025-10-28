@@ -1,0 +1,114 @@
+use strict;
+use warnings;
+use EBox;
+use EBox::Samba::User;
+use EBox::Mail::Account;
+use EBox::Mail::MailDomain;
+
+
+
+
+
+
+
+/////////////////////Video de guia para sftp ////////////////////////////
+
+video de guia para instalar sftp en ubuntu: https://www.youtube.com/watch?v=DASh69i5QjY&t=471s
+
+
+/////// Instalar ssh: ///////////////////////////////////////////////////
+sudo apt-get update
+sudo apt-get install openssh-server
+
+////Pasos para vincular con visual studio code ////////////////////////
+
+#Para configurar el servidor SFTP en Ubuntu y permitir la conexión desde Visual Studio Code, sigue estos pasos:
+
+#Editar el archivo de configuración SSH:
+
+Abre el archivo /etc/ssh/sshd_config en un editor de texto. Utiliza el siguiente comando para abrirlo con el editor nano:
+
+sudo nano /etc/ssh/sshd_config
+
+#Realiza las configuraciones necesarias:
+
+#Asegúrate de que las siguientes líneas estén configuradas adecuadamente en el archivo. Puedes buscarlas en el archivo y ajustar sus valores según tus preferencias:
+
+#Para permitir la autenticación mediante contraseña, asegúrate de que la línea PasswordAuthentication esté configurada como sigue:
+
+PasswordAuthentication yes
+
+#Para permitir la autenticación mediante clave pública, asegúrate de que la línea PubkeyAuthentication esté configurada como sigue:
+
+PubkeyAuthentication yes
+
+#Si estás utilizando claves públicas, asegúrate de que la línea AuthorizedKeysFile apunte al archivo correcto:
+
+AuthorizedKeysFile      %h/.ssh/authorized_keys
+
+#Guarda los cambios y cierra el editor.
+
+#Reinicia el servicio SSH:
+
+#Después de realizar cambios en la configuración de SSH, es necesario reiniciar el servicio para que los cambios surtan efecto. Puedes hacer esto con el siguiente comando:
+
+sudo service ssh restart
+
+#O con el siguiente comando en sistemas más recientes:
+
+sudo systemctl restart ssh
+
+#Este comando reiniciará el servicio SSH y aplicará los cambios realizados en el archivo de configuración.
+
+#Verifica la configuración:
+
+#Puedes verificar que el servidor está escuchando en el puerto adecuado (por defecto, el puerto 22) y que la configuración es correcta utilizando el siguiente comando:
+
+sudo ss -tnlp | grep ssh
+
+#Asegúrate de que el servicio esté en ejecución y escuchando en el puerto correcto.
+
+#Configuración del cliente SFTP en Visual Studio Code:
+
+Abre Visual Studio Code y ve a la pestaña de extensiones (puedes hacerlo presionando Ctrl + Shift + X).
+
+Busca "SFTP" y elige un complemento que admita la conexión SFTP, como "sftp" de liximomo.
+Abre tu archivo de configuración en Visual Studio Code (puedes hacerlo presionando Ctrl + ,) y agrega la configuración del servidor SFTP. Aquí tienes un ejemplo de configuración:
+
+json
+Copy code
+"remote.SFTP": {
+    "protocol": "sftp",
+    "host": "tu_direccion_ip",
+    "port": 22,
+    "username": "tu_usuario",
+    "password": "tu_contraseña",
+    "rootPath": "/ruta_en_el_servidor",
+    "ignore": ["node_modules"]
+}
+
+
+
+
+public function ejecutarComandoRemoto()
+    {
+        $usuario = 'fran';
+        $servidor = '192.168.43.146';
+        $comando = 'perl /var/www/html/create_zentyal_user.pl';
+
+        $process = new Process([
+            'ssh',
+            "-i /var/www/.ssh/id_rsa",  // Ruta de la clave privada
+            "$usuario@$servidor",
+            $comando,
+            '-o PasswordAuthentication=yes',  // Permitir autenticación por contraseña
+            '-o StrictHostKeyChecking=no',
+        ]);
+
+        try {
+            $process->mustRun();
+            return "Comando remoto ejecutado con éxito: " . $process->getOutput();
+        } catch (ProcessFailedException $exception) {
+            return "Error al ejecutar el comando remoto. Código: {$exception}, Salida: " . $exception->getProcess()->getOutput();
+        }
+    }

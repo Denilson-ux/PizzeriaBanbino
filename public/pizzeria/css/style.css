@@ -1,0 +1,247 @@
+.validarIncorrecto {
+    border-color: #dc3545;
+    background-color: #f3d1ce !important;
+    border-width: 3px;
+}
+
+
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.custom-file {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+}
+
+.custom-file-input {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    margin: 0;
+    opacity: 0;
+}
+
+.custom-file-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.custom-file-input:focus~.custom-file-label::after {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.imagen {
+    max-width: 100px;
+    max-height: 100px;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+}
+
+.menu-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding: 20px;
+}
+
+.menu-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 140px !important;
+    /* Reducí el ancho */
+    /* height: 200px; Reducí la altura */
+    margin: 10px;
+    /* Reducí el margen */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.menu-card:hover {
+    transform: scale(1.05);
+}
+
+.menu-card img {
+    width: 100%;
+    height: 80px;
+    /* Reducí la altura */
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.menu-card-content {
+    padding: 8px;
+    /* Reducí el padding */
+}
+
+.menu-card h3 {
+    margin: 0;
+    font-size: 14px;
+    /* Reducí el tamaño de la fuente */
+    color: #333;
+}
+
+.menu-card p {
+    margin: 6px 0;
+    /* Reducí el margen */
+    font-size: 10px;
+    /* Reducí el tamaño de la fuente */
+    color: #555;
+}
+
+.menu-card-price {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.menu-card-stock {
+    color: rgb(15, 17, 15);
+}
+
+.add-to-cart-btn {
+    display: block;
+    width: 100%;
+    padding: 6px;
+    /* Reducí el padding */
+    text-align: center;
+    background-color: #28a745;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    border-radius: 0 0 8px 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.add-to-cart-btn:hover {
+    background-color: #218838;
+}
+
+/* Agrega estilos para el botón flotante en la esquina inferior derecha */
+.floating-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    /* Ajusta el índice z según sea necesario para que esté por encima de otros elementos */
+}
+
+/* Ajusta el estilo del botón según tus preferencias */
+.floating-btn button {
+    /* Agrega estilos personalizados aquí */
+}
+
+
+/* alert */
+.alertify .ajs-dimmer {
+    background-color: #000;
+    opacity: .5
+}
+
+.alertify .ajs-dialog {
+    max-width: 600px;
+    min-height: 122px;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, .2);
+    -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+    border-radius: 6px
+}
+
+.alertify .ajs-header {
+    color: #333;
+    border-bottom: 1px solid #e5e5e5;
+    border-radius: 6px 6px 0 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 18px
+}
+
+.alertify .ajs-body {
+    font-family: Roboto, sans-serif;
+    color: #000
+}
+
+.alertify.ajs-maximized:not(.ajs-resizable) .ajs-content,
+.alertify.ajs-resizable .ajs-content {
+    top: 58px;
+    bottom: 68px,
+}
+
+.alertify .ajs-footer {
+    background-color: #fff;
+    padding: 15px;
+    border-top: 1px solid #e5e5e5;
+    border-radius: 0 0 6px 6px
+}
+
+.alertify-notifier .ajs-message {
+    background: rgba(255, 255, 255, .95);
+    color: #000;
+    text-align: center;
+    border: solid 1px #ddd;
+    border-radius: 2px
+}
+
+.alertify-notifier .ajs-message.ajs-success {
+    color: #fff;
+    background: rgba(91, 189, 114, .95);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, .5);
+    left: 300px; /* Ajusta la posición izquierda según tus necesidades */
+    bottom: 10px; /* Ajusta la posición inferior según tus necesidades */
+}
+
+
+.alertify-notifier .ajs-message.ajs-error {
+    color: #fff;
+    background: rgba(217, 92, 92, .95);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, .5)
+}
+
+.alertify-notifier .ajs-message.ajs-warning {
+    background: rgba(252, 248, 215, .95);
+    border-color: #999
+}
+
+#map {
+    width: 100%;
+    height: 300px;
+}
+
+#ubicacion-actual-btn {
+    position: absolute;
+    bottom: 110px;
+    right: 19px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 10px 20px;
+    white-space: nowrap;
+    z-index: 1;
+    width: 10px;
+}
+
+#ubicacion-actual-btn:hover {
+    background-color: #f8f8f8;
+}

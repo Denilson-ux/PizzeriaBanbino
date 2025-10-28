@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <link rel="shortcut icon" href="{{asset('/feane/images/favicon.png')}}" type="">
+
+  <title> Mi pizzeria </title>
+
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="{{asset('/feane/css/bootstrap.css')}}" />
+
+  <!--owl slider stylesheet -->
+  <link rel="stylesheet" type="text/css" href="{{asset('/feane/css/carousel.min.css')}}" />
+  <!-- nice select  -->
+  <link rel="stylesheet" href="{{asset('/feane/css/select.min.css')}}" integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ==" crossorigin="anonymous" />
+  <!-- font awesome style -->
+  <link href="{{asset('/feane/css/font-awesome.min.css')}}" rel="stylesheet" />
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+  <!-- Custom styles for this template -->
+  <link href="{{asset('/feane/css/style.css')}}" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="{{asset('/feane/css/responsive.css')}}" rel="stylesheet" />
+
+  {{-- leaflet --}}
+  {{-- <link rel="stylesheet" href="{{asset('/bootstrap/css/leaflet.css')}}"> --}}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://unpkg.com/leaflet-search"></script>
+  <script src="https://unpkg.com/leaflet-search-complements"></script>
+
+  @yield('clientweb.css')
+  <style>
+    .floating-cart-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px; 
+        padding: 10px;
+        border-radius: 50%;
+        z-index: 9999; 
+        color: #ffffff; 
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+      }
+
+      .floating-cart-button i {
+        font-size: 30px; 
+      }
+
+      .header_section {
+        position: fixed;
+        width: 100%;
+        top: 0;
+        background-color: #1a1616; 
+        z-index: 1000; 
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+      }
+    .content-section {
+      padding-top: 80px; /* Ajusta esto según la altura de tu encabezado */
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- header section strats -->
+  <header class="header_section header-section">
+    <div class="container">
+      <nav class="navbar navbar-expand-lg custom_nav-container ">
+        <a class="navbar-brand" href="index.html">
+          <span>
+            pizzeria
+          </span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class=""> </span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav  mx-auto ">
+            <li class="nav-item active">
+              <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="menu.html">Menu</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="about.html">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="book.html">Book Table</a>
+            </li>
+          </ul>
+          <div class="user_option">
+            <a href="" class="user_link">
+              <i class="fa fa-user" aria-hidden="true"></i>
+            </a>
+            <a class="user_link" href="">
+              <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+            </a>
+            <form class="form-inline">
+              <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
+                <i class="fa fa-search" aria-hidden="true"></i>
+              </button>
+            </form>
+            <a href="" class="order_online text-center">
+              Ordene en línea
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+  <!-- end header section -->
+
+  <div class="hero_area">
+    {{-- Imagen de carrusel --}}
+    <div class="bg-box">
+      <img src="{{asset('/feane/images/hero-bg.jpg')}}" alt="">
+    </div>
+
+    <!-- slider section -->
+    <section class="slider_section ">
+      <div id="customCarousel1" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-7 col-lg-6 ">
+                  <div class="detail-box">
+                    <h1>
+                      Bienvenido a Mi pizzeria
+                    </h1>
+                    <p>
+                      Sumérgete en una experiencia culinaria única en nuestro acogedor restaurante. Descubre la deliciosa fusión de sabores en cada platillo, cuidadosamente preparado para satisfacer tus antojos. Deleita tus sentidos con nosotros.
+                    </p>
+                    <div class="btn-box">
+                      <a href="#section-items" class="btn1">
+                        ¡Ordena Ahora!
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item ">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-7 col-lg-6 ">
+                  <div class="detail-box">
+                    <h1>
+                      Explora los Sabores en Mi pizzeria
+                    </h1>
+                    <p>
+                      Deleita tu paladar con nuestras exquisitas opciones de fast food. Cada bocado es una explosión de sabor y frescura. En Mi pizzeria, no solo ofrecemos comida rápida, ofrecemos una experiencia gastronómica inolvidable.
+                    </p>
+                    <div class="btn-box">
+                      <a href="#section-items" class="btn1">
+                        ¡Haz tu Pedido Ahora!
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-7 col-lg-6 ">
+                  <div class="detail-box">
+                    <h1>
+                      Descubre Mi pizzeria
+                    </h1>
+                    <p>
+                      Suma momentos especiales con nosotros. En Mi pizzeria, creamos no solo comidas, sino recuerdos. Ven y disfruta de la atmósfera acogedora mientras te entregamos delicias irresistibles que te harán volver por más.
+                    </p>
+                    <div class="btn-box">
+                      <a href="#section-items" class="btn1">
+                        ¡Ordénalo Ya!
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="container">
+          <ol class="carousel-indicators">
+            <li data-target="#customCarousel1" data-slide-to="0" class="active"></li>
+            <li data-target="#customCarousel1" data-slide-to="1"></li>
+            <li data-target="#customCarousel1" data-slide-to="2"></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+    <!-- end slider section -->
+  </div>
+
+  <!-- descuento section -->
+
+  <!-- end descuento section -->
+
+     <!-- menú food section -->
+     <section class="food_section layout_padding-bottom" id="section-items">
+      <div class="container">
+        <div class="heading_container heading_center">
+          <h2>
+            Our Menu
+          </h2>
+        </div>
+
+        <ul class="filters_menu">
+          <li class="active" data-filter="*">All</li>
+          <li data-filter=".burger">Burger</li>
+          <li data-filter=".pizza">Pizza</li>
+          <li data-filter=".pasta">Pasta</li>
+          <li data-filter=".fries">Fries</li>
+        </ul>
+
+        <div class="filters-content">
+          <div class="row grid">
+            <div class="col-sm-6 col-lg-4 all pizza">
+              <div class="box">
+                <div>
+                  <div class="img-box">
+                    <img src="{{asset('/feane/images/f1.png')}}" alt="">
+                  </div>
+                  <div class="detail-box">
+                    <h5>
+                      Delicious Pizza
+                    </h5>
+                    <p>
+                      Veniam debitis quaerat officiis quasi cupiditate quo, quisquam velit, magnam voluptatem repellendus sed eaque
+                    </p>
+                    <div class="options">
+                      <h6>
+                        $20
+                      </h6>
+                      <a href="" style="color: white">
+                          <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-4 all burger">
+              <div class="box">
+                <div>
+                  <div class="img-box">
+                    <img src="images/f2.png" alt="">
+                  </div>
+                  <div class="detail-box">
+                    <h5>
+                      Delicious Burger
+                    </h5>
+                    <p>
+                      Veniam debitis quaerat officiis quasi cupiditate quo, quisquam velit, magnam voluptatem repellendus sed eaque
+                    </p>
+                    <div class="options">
+                      <h6>
+                        $15
+                      </h6>
+                      <a href="">
+                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-4 all pasta">
+              <div class="box">
+                <div>
+                  <div class="img-box">
+                    <img src="images/f4.png" alt="">
+                  </div>
+                  <div class="detail-box">
+                    <h5>
+                      Delicious Pasta
+                    </h5>
+                    <p>
+                      Veniam debitis quaerat officiis quasi cupiditate quo, quisquam velit, magnam voluptatem repellendus sed eaque
+                    </p>
+                    <div class="options">
+                      <h6>
+                        $18
+                      </h6>
+                      <a href="">
+                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-box">
+          <a href="">
+            View More
+          </a>
+        </div>
+      </div>
+    </section>
+    <!-- end menú food section -->
+
+  {{-- Botón flotante --}}
+  <div class="floating-cart-button">
+    <a href="#" id="open-cart" class="text-warning">
+      <i class="fa fa-shopping-cart" aria-hidden="true"></i> Pagar
+    </a>
+  </div>
+  {{-- end boton flotante --}}
+
+
+  <!-- formulario book section -->
+  <section class="book_section layout_padding">
+    <div class="container">
+      <div class="heading_container">
+        <h2>
+          Registrate para hacer tu pedido
+        </h2>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form_container">
+            <form action="">
+              <div>
+                <input id="nombre-cliente" type="text" class="form-control" placeholder="Tu nombre" />
+              </div>
+              <div>
+                <input id="numero-cliente" type="text" class="form-control" placeholder="Tu Número" />
+              </div>
+              <div>
+                <input id="email-cliente" type="email" class="form-control" placeholder="Tu Correo" />
+              </div>
+              <div>
+                <input id="direccion-cliente" type="text" class="form-control" placeholder="Tu Dirección" />
+              </div>
+              {{-- <div>
+                <input type="date" class="form-control">
+              </div> --}}
+              <div class="btn_box">
+                <button>
+                  Book Now
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="map_container ">
+            <input type="text" hidden id="latitud-cliente">
+            <input type="text" hidden id="longitud-cliente">
+            <div id="map" style="height: 400px;"></div>
+          <div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end formulario book section -->
+
+
+    <!-- about section -->
+    <section class="about_section layout_padding">
+      <div class="container  ">
+  
+        <div class="row">
+          <div class="col-md-6 ">
+            <div class="img-box">
+              <img src="images/about-img.png" alt="">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="detail-box">
+              <div class="heading_container">
+                <h2>
+                  We Are Feane
+                </h2>
+              </div>
+              <p>
+                There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration
+                in some form, by injected humour, or randomised words which don't look even slightly believable. If you
+                are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in
+                the middle of text. All
+              </p>
+              <a href="">
+                Read More
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- end about section -->
+
+
+  <!-- comentarios client section -->
+  <section class="client_section layout_padding-bottom">
+    <div class="container">
+      <div class="heading_container heading_center psudo_white_primary mb_45">
+        <h2>
+          Lo que dicen nuestros clientes
+        </h2>
+      </div>
+      <div class="carousel-wrap row ">
+        <div class="owl-carousel client_owl-carousel">
+          <div class="item">
+            <div class="box">
+              <div class="detail-box">
+                <p>
+                  Disfruté de momentos increíbles en Mi pizzeria. La comida es exquisita, y el ambiente es perfecto para relajarse. Sin duda, un lugar único.
+                </p>
+                <h6>
+                  Moana Michell
+                </h6>
+                <p>
+                  magna aliqua
+                </p>
+              </div>
+              <div class="img-box">
+                <img src="images/client1.jpg" alt="" class="box-img">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end comentarios client section -->
+
+  <!-- footer section -->
+  <footer class="footer_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 footer-col">
+          <div class="footer_contact">
+            <h4>
+              Contáctanos
+            </h4>
+            <div class="contact_link_box">
+              <a href="#">
+                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                <span>
+                  Ubicación
+                </span>
+              </a>
+              <a href="#">
+                <i class="fa fa-phone" aria-hidden="true"></i>
+                <span>
+                  +591 68922382
+                </span>
+              </a>
+              <a href="mailto:pizzeria@gmail.com">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+                <span>
+                  pizzeria@gmail.com
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 footer-col">
+          <div class="footer_detail">
+            <a href="#" class="footer-logo">
+              Mi pizzeria
+            </a>
+            <p>
+              Descubre una experiencia gastronómica única en Mi pizzeria. Utilizamos ingredientes frescos para ofrecer sabores auténticos que te transportarán a nuevos lugares.
+            </p>
+            <div class="footer_social">
+              <a href="#">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 footer-col">
+          <h4>
+            Horario de Atención
+          </h4>
+          <p>
+            Todos los días
+          </p>
+          <p>
+            10:00 a.m. - 10:00 p.m.
+          </p>
+        </div>
+      </div>
+      <div class="footer-info">
+        <p>
+          &copy; <span id="displayYear"></span> Todos los derechos reservados por<br><br>
+          &copy; <span id="displayYear"></span> Distribuido por
+        </p>
+      </div>
+    </div>
+</footer>
+
+  <!-- footer section -->
+
+  <!-- jQery -->
+  <script src="{{asset('/feane/js/jquery-3.4.1.min.js')}}"></script>
+  <!-- popper js -->
+  <script src="{{asset('/feane/js/popper.min.js')}}" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <!-- bootstrap js -->
+  <script src="{{asset('/feane/js/bootstrap.js')}}"></script>
+  <!-- owl slider -->
+  <script src="{{asset('/feane/js/carousel.min.js')}}">
+  </script>
+  <!-- isotope js -->
+  <script src="{{asset('/feane/js/isotope-layout@3.0.4_dist_isotope.pkgd.min.js')}}"></script>
+  <!-- nice select -->
+  <script src="{{asset('/feane/js/ajax_libs_jquery-nice-select_1.1.0_js_jquery.nice-select.min.js')}}"></script>
+  <!-- custom js -->
+  <script src="{{asset('/feane/js/custom.js')}}"></script>
+  
+  {{-- leaflet --}}
+  {{-- <script src="{{asset('/bootstrap/js/leaflet.js')}}"></script>
+  <script src="{{asset('/bootstrap/js/Control.Geocoder.js')}}"></script>
+  <script src="{{asset('/bootstrap/js/leaflet-search.src.js')}}"></script> --}}
+
+  {{-- personalizado --}}
+  <script src="{{asset('/pizzeria/js/cliente_web/index_cliente_web.js')}}"></script>
+
+  @yield('clientweb.js')
+
+</body>
+
+</html>
