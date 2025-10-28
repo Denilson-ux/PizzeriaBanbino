@@ -86,7 +86,7 @@ return [
             'icon' => 'fas fa-fw fa-shopping-basket',
             'submenu' => [
                 [ 'text' => 'Gestionar Compras','url' => 'admin/compras','icon' => 'fas fa-fw fa-list' ],
-                [ 'text' => 'Nueva Compra','url' => 'admin/compras/create','icon' => 'fas fa-fw fa-plus' ],
+              //  [ 'text' => 'Nueva Compra','url' => 'admin/compras/create','icon' => 'fas fa-fw fa-plus' ],
             ]
         ],
         [
@@ -94,7 +94,7 @@ return [
             'icon' => 'fas fa-fw fa-truck',
             'submenu' => [
                 [ 'text' => 'Gestionar Proveedores','url' => 'admin/proveedores','icon' => 'fas fa-fw fa-list' ],
-                [ 'text' => 'Nuevo Proveedor','url' => 'admin/proveedores/create','icon' => 'fas fa-fw fa-plus' ],
+               // [ 'text' => 'Nuevo Proveedor','url' => 'admin/proveedores/create','icon' => 'fas fa-fw fa-plus' ],
             ]
         ],
 
@@ -104,7 +104,7 @@ return [
             'icon' => 'fas fa-fw fa-warehouse',
             'submenu' => [
                 [ 'text' => 'Gestionar Almacenes','url' => 'admin/almacenes','icon' => 'fas fa-fw fa-list' ],
-                [ 'text' => 'Nuevo Almacén','url' => 'admin/almacenes/create','icon' => 'fas fa-fw fa-plus' ],
+           //     [ 'text' => 'Nuevo Almacén','url' => 'admin/almacenes/create','icon' => 'fas fa-fw fa-plus' ],
             ]
         ],
         [
@@ -112,7 +112,7 @@ return [
             'icon' => 'fas fa-fw fa-seedling',
             'submenu' => [
                 [ 'text' => 'Gestionar Ingredientes','url' => 'admin/ingredientes','icon' => 'fas fa-fw fa-list' ],
-                [ 'text' => 'Nuevo Ingrediente','url' => 'admin/ingredientes/create','icon' => 'fas fa-fw fa-plus' ],
+             //   [ 'text' => 'Nuevo Ingrediente','url' => 'admin/ingredientes/create','icon' => 'fas fa-fw fa-plus' ],
             ]
         ],
 
