@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Ingrediente;
-use App\Models\Almacen;
+use Illuminate\Support\Facades\DB;
 
 class IngredientesSeeder extends Seeder
 {
@@ -154,6 +154,16 @@ class IngredientesSeeder extends Seeder
             ]
         ];
         
+        // Obtener el ID del almacén principal creado por la migración de reestructura
+        $almacenPrincipalId = DB::table('almacenes')
+            ->where('nombre', 'Almacén Principal')
+            ->value('id_almacen');
+        
+        if (!$almacenPrincipalId) {
+            $this->command->error('No se encontró el Almacén Principal. Ejecute primero las migraciones.');
+            return;
+        }
+        
         foreach ($ingredientes as $data) {
             // Separar datos de ingrediente y almacén
             $ingredienteData = [
@@ -166,23 +176,27 @@ class IngredientesSeeder extends Seeder
                 'estado' => $data['estado']
             ];
             
-            $almacenData = [
+            $inventarioData = [
+                'id_almacen' => $almacenPrincipalId,
                 'stock_actual' => $data['stock_inicial'],
                 'stock_minimo' => $data['stock_minimo'],
                 'stock_maximo' => $data['stock_maximo'],
                 'unidad_medida' => $data['unidad_medida'],
                 'costo_unitario_promedio' => $data['costo_unitario'],
                 'fecha_ultimo_ingreso' => now(),
-                'estado' => 'activo'
+                'estado' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now()
             ];
             
             // Crear ingrediente
             $ingrediente = Ingrediente::create($ingredienteData);
             
-            // Crear registro de almacén
-            $ingrediente->almacen()->create($almacenData);
+            // Crear registro de inventario en almacén principal
+            $inventarioData['id_ingrediente'] = $ingrediente->id_ingrediente;
+            DB::table('inventario_almacen')->insert($inventarioData);
         }
         
-        $this->command->info('Se han creado ' . count($ingredientes) . ' ingredientes con sus registros de almacén.');
+        $this->command->info('Se han creado ' . count($ingredientes) . ' ingredientes con sus registros de inventario.');
     }
 }

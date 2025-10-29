@@ -32,11 +32,22 @@ class Ingrediente extends Model
     ];
 
     /**
-     * Relación con almacén (uno a uno)
+     * Relación con inventarios (uno a muchos)
      */
-    public function almacen()
+    public function inventarios()
     {
-        return $this->hasOne(Almacen::class, 'id_ingrediente', 'id_ingrediente');
+        return $this->hasMany(InventarioAlmacen::class, 'id_ingrediente', 'id_ingrediente');
+    }
+
+    /**
+     * Relación con inventario principal (almacén principal)
+     */
+    public function inventarioPrincipal()
+    {
+        return $this->hasOne(InventarioAlmacen::class, 'id_ingrediente', 'id_ingrediente')
+                   ->whereHas('almacen', function($query) {
+                       $query->where('nombre', 'Almacén Principal');
+                   });
     }
 
     /**
@@ -70,11 +81,11 @@ class Ingrediente extends Model
     }
 
     /**
-     * Obtener stock actual del ingrediente
+     * Obtener stock actual del ingrediente (del almacén principal)
      */
     public function getStockActualAttribute()
     {
-        return $this->almacen ? $this->almacen->stock_actual : 0;
+        return $this->inventarioPrincipal ? $this->inventarioPrincipal->stock_actual : 0;
     }
 
     /**
@@ -90,9 +101,9 @@ class Ingrediente extends Model
      */
     public function getStockBajoAttribute()
     {
-        if (!$this->almacen) return false;
+        if (!$this->inventarioPrincipal) return false;
         
-        return $this->almacen->stock_actual <= $this->almacen->stock_minimo;
+        return $this->inventarioPrincipal->stock_actual <= $this->inventarioPrincipal->stock_minimo;
     }
 
     /**
@@ -108,7 +119,7 @@ class Ingrediente extends Model
      */
     public function scopeStockBajo($query)
     {
-        return $query->whereHas('almacen', function($q) {
+        return $query->whereHas('inventarios', function($q) {
             $q->whereRaw('stock_actual <= stock_minimo');
         });
     }

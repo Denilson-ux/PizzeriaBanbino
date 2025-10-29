@@ -27,19 +27,43 @@ class Almacenes extends Model
     ];
 
     /**
-     * Relación con inventario del almacén
+     * Relación con inventario (uno a muchos)
      */
-    public function inventario()
+    public function inventarios()
     {
         return $this->hasMany(InventarioAlmacen::class, 'id_almacen', 'id_almacen');
     }
 
     /**
-     * Relación con compras destinadas a este almacén
+     * Relación con compras (uno a muchos)
      */
     public function compras()
     {
         return $this->hasMany(Compra::class, 'id_almacen_destino', 'id_almacen');
+    }
+
+    /**
+     * Obtener inventario de un ingrediente específico
+     */
+    public function inventarioIngrediente($idIngrediente)
+    {
+        return $this->inventarios()->where('id_ingrediente', $idIngrediente)->first();
+    }
+
+    /**
+     * Obtener inventario con stock bajo
+     */
+    public function inventarioStockBajo()
+    {
+        return $this->inventarios()->stockBajo()->with('ingrediente');
+    }
+
+    /**
+     * Obtener inventario agotado
+     */
+    public function inventarioAgotado()
+    {
+        return $this->inventarios()->agotados()->with('ingrediente');
     }
 
     /**
@@ -51,76 +75,10 @@ class Almacenes extends Model
     }
 
     /**
-     * Scope para almacenes inactivos
-     */
-    public function scopeInactivos($query)
-    {
-        return $query->where('estado', 'inactivo');
-    }
-
-    /**
-     * Obtener total de ingredientes en el almacén
-     */
-    public function getTotalIngredientesAttribute()
-    {
-        return $this->inventario()->where('estado', 'activo')->count();
-    }
-
-    /**
-     * Obtener total de productos con stock
-     */
-    public function getProductosConStockAttribute()
-    {
-        return $this->inventario()->where('stock_actual', '>', 0)->count();
-    }
-
-    /**
-     * Obtener productos con stock bajo
-     */
-    public function getProductosStockBajoAttribute()
-    {
-        return $this->inventario()->whereRaw('stock_actual <= stock_minimo')->count();
-    }
-
-    /**
-     * Obtener valor total del inventario
+     * Obtener valor total del inventario del almacén
      */
     public function getValorTotalInventarioAttribute()
     {
-        return $this->inventario()
-                    ->selectRaw('SUM(stock_actual * costo_unitario_promedio) as total')
-                    ->first()->total ?? 0;
-    }
-
-    /**
-     * Verificar si el almacén tiene ingredientes
-     */
-    public function tieneIngredientes()
-    {
-        return $this->inventario()->exists();
-    }
-
-    /**
-     * Obtener ingredientes con stock bajo en este almacén
-     */
-    public function ingredientesStockBajo()
-    {
-        return $this->inventario()
-                    ->with('ingrediente')
-                    ->whereRaw('stock_actual <= stock_minimo')
-                    ->where('estado', 'activo')
-                    ->get();
-    }
-
-    /**
-     * Obtener ingredientes agotados en este almacén
-     */
-    public function ingredientesAgotados()
-    {
-        return $this->inventario()
-                    ->with('ingrediente')
-                    ->where('stock_actual', '<=', 0)
-                    ->where('estado', 'activo')
-                    ->get();
+        return $this->inventarios->sum('valor_total_stock');
     }
 }

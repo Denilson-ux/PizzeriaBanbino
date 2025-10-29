@@ -34,13 +34,11 @@ class InventarioAlmacen extends Model
         'costo_unitario_promedio' => 'decimal:2',
         'fecha_ultimo_ingreso' => 'date',
         'fecha_ultimo_egreso' => 'date',
-        'fecha_vencimiento' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'fecha_vencimiento' => 'date'
     ];
 
     /**
-     * Relación con almacén
+     * Relación con almacén físico
      */
     public function almacen()
     {
@@ -81,7 +79,6 @@ class InventarioAlmacen extends Model
 
     /**
      * Aumentar stock (por compras)
-     * Actualiza el costo promedio ponderado
      */
     public function aumentarStock($cantidad, $costoUnitario = null)
     {
@@ -151,15 +148,6 @@ class InventarioAlmacen extends Model
     public function scopeActivos($query)
     {
         return $query->where('estado', 'activo');
-    }
-
-    /**
-     * Scope para productos próximos a vencer
-     */
-    public function scopeProximosVencer($query, $dias = 7)
-    {
-        return $query->where('fecha_vencimiento', '<=', now()->addDays($dias))
-                    ->whereNotNull('fecha_vencimiento');
     }
 
     /**
