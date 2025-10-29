@@ -3,6 +3,7 @@ let marker;
 let metodoPago = 1; //efectivo
 let total = 0;
 let googleMapsLoaded = false;
+let paypalInitialized = false;
 
 $(document).ready(function () {
     cargarDatosCliente();
@@ -27,9 +28,126 @@ $(document).ready(function () {
         }, 100);
     }
 
+    // Initialize PayPal when page is ready
+    initPayPalButtons();
+
     $("#registrarme-nav").addClass("d-none");
     $("#nav-carrito-search").addClass("d-none");
 });
+
+// PayPal Initialization Function
+function initPayPalButtons() {
+    // Wait a bit for PayPal SDK to load
+    setTimeout(() => {
+        if (typeof paypal !== 'undefined' && paypal.Buttons) {
+            if (!paypalInitialized) {
+                renderPayPalButtons();
+                paypalInitialized = true;
+                console.log('PayPal inicializado correctamente');
+            }
+        } else {
+            console.warn('PayPal SDK aún no está disponible, reintentando...');
+            // Try again after more time
+            setTimeout(() => {
+                if (typeof paypal !== 'undefined' && paypal.Buttons && !paypalInitialized) {
+                    renderPayPalButtons();
+                    paypalInitialized = true;
+                    console.log('PayPal inicializado correctamente (segundo intento)');
+                } else if (!paypalInitialized) {
+                    console.error('PayPal SDK no se pudo cargar');
+                    showPayPalError();
+                }
+            }, 2000);
+        }
+    }, 1000);
+}
+
+// Render PayPal Buttons
+function renderPayPalButtons() {
+    try {
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color: 'blue',
+                shape: 'rect',
+                label: 'pay',
+                height: 45
+            },
+            createOrder: function(data, actions) {
+                // Convertir bolivianos a dólares usando la función montoDolar
+                const montoDolares = montoDolar(total);
+                
+                console.log('Creando orden PayPal:', {
+                    bolivianos: total,
+                    dolares: montoDolares
+                });
+                
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: montoDolares,
+                            currency_code: 'USD'
+                        },
+                        description: `Pizzería Bambino - Pedido ${Date.now()}`,
+                        custom_id: `PIZZA-${Date.now()}`
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                console.log('PayPal onApprove triggered:', data);
+                
+                return actions.order.capture().then(function(details) {
+                    console.log('¡Pago completado con PayPal!', details);
+                    
+                    if (details.status === "COMPLETED") {
+                        // El dinero llega a tu cuenta denilsonquichu@gmail.com
+                        const clienteInfo = `${details.payer.name.given_name} ${details.payer.name.surname}`;
+                        const descripcionPago = `PayPal - ${clienteInfo} (${details.payer.email_address})`;
+                        
+                        sweentAlert("top-end", "success", `¡Pago completado! Recibido de ${details.payer.name.given_name}`, 3000);
+                        
+                        // Guardar el pedido con información de PayPal
+                        savePedido(details.id, descripcionPago);
+                    } else {
+                        sweentAlert("top-end", "warning", "El pago está siendo procesado...", 2000);
+                    }
+                }).catch(function(error) {
+                    console.error('Error capturando el pago:', error);
+                    sweentAlert("top-end", "error", "Error al completar el pago. Intenta nuevamente.", 3000);
+                });
+            },
+            onCancel: function(data) {
+                console.log('Pago cancelado por el usuario:', data);
+                sweentAlert("top-end", "warning", "Pago cancelado por el usuario", 2000);
+            },
+            onError: function(err) {
+                console.error('Error en PayPal:', err);
+                sweentAlert("top-end", "error", "Error al procesar el pago. Por favor intenta de nuevo.", 3000);
+            }
+        }).render('#paypal-button-container').then(() => {
+            console.log('PayPal buttons rendered successfully');
+            // Hide error message if it exists
+            const errorElement = document.querySelector('#paypal-error-message');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }).catch((error) => {
+            console.error('Error rendering PayPal buttons:', error);
+            showPayPalError();
+        });
+    } catch (error) {
+        console.error('Error inicializando PayPal:', error);
+        showPayPalError();
+    }
+}
+
+// Show PayPal Error
+function showPayPalError() {
+    const paypalContainer = document.getElementById('paypal-button-container');
+    if (paypalContainer) {
+        paypalContainer.innerHTML = '<p id="paypal-error-message" class="text-danger"><i class="fas fa-exclamation-triangle"></i> PayPal no está disponible. Intenta recargar la página.</p>';
+    }
+}
 
 $(document).on("click", "#ubicacion-actual-btn", () => {
     if (googleMapsLoaded) {
@@ -135,6 +253,11 @@ function cargarDetalleProducto() {
     });
     $("#total").text(total + " " + "Bs.");
     $("#price").text("$ " + montoDolar(total));
+    
+    // Initialize PayPal after total is calculated
+    if (!paypalInitialized) {
+        initPayPalButtons();
+    }
 }
 
 function montoTotal(array, descuentoCliente) {
@@ -180,6 +303,11 @@ $("input[type='radio']").change(function () {
             $("#paypal-button-container").removeClass("d-none");
             $("#container-button-confirmar").addClass("d-none");
             metodoPago = 2;
+            
+            // Initialize PayPal if not done yet
+            if (!paypalInitialized) {
+                initPayPalButtons();
+            }
         } else {
             $("#price").addClass("d-none");
             $("#label-price").addClass("d-none");
@@ -445,70 +573,6 @@ function ubicacionActualReady() {
             console.log("Error al obtener la ubicación:", error);
             sweentAlert("top-end", "error", error, 3000);
         });
-}
-
-// PayPal Integration - ACTUALIZADA CON TU CLIENT ID
-if (typeof paypal !== 'undefined') {
-    paypal.Buttons({
-        style: {
-            layout: 'vertical',
-            color: 'blue',
-            shape: 'rect',
-            label: 'pay',
-            height: 45
-        },
-        createOrder: function(data, actions) {
-            // Convertir bolivianos a dólares usando la función montoDolar
-            const montoDolares = montoDolar(total);
-            
-            return actions.order.create({
-                purchase_units: [{
-                    amount: {
-                        value: montoDolares,
-                        currency_code: 'USD'
-                    },
-                    description: `Pizzería Bambino - Pedido ${Date.now()}`,
-                    custom_id: `PIZZA-${Date.now()}`
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-                console.log('¡Pago completado con PayPal!', details);
-                
-                if (details.status === "COMPLETED") {
-                    // El dinero llega a tu cuenta denilsonquichu@gmail.com
-                    const clienteInfo = `${details.payer.name.given_name} ${details.payer.name.surname}`;
-                    const descripcionPago = `PayPal - ${clienteInfo} (${details.payer.email_address})`;
-                    
-                    sweentAlert("top-end", "success", `¡Pago completado! Recibido de ${details.payer.name.given_name}`, 3000);
-                    
-                    // Guardar el pedido con información de PayPal
-                    savePedido(details.id, descripcionPago);
-                } else {
-                    sweentAlert("top-end", "warning", "El pago está siendo procesado...", 2000);
-                }
-            }).catch(function(error) {
-                console.error('Error capturando el pago:', error);
-                sweentAlert("top-end", "error", "Error al completar el pago. Intenta nuevamente.", 3000);
-            });
-        },
-        onCancel: function(data) {
-            console.log('Pago cancelado por el usuario:', data);
-            sweentAlert("top-end", "warning", "Pago cancelado por el usuario", 2000);
-        },
-        onError: function(err) {
-            console.error('Error en PayPal:', err);
-            sweentAlert("top-end", "error", "Error al procesar el pago. Por favor intenta de nuevo.", 3000);
-        }
-    }).render('#paypal-button-container');
-} else {
-    console.error('PayPal SDK no se cargó correctamente');
-    // Mostrar mensaje de error en el contenedor de PayPal
-    const paypalContainer = document.getElementById('paypal-button-container');
-    if (paypalContainer) {
-        paypalContainer.innerHTML = '<p class="text-danger">Error: PayPal no está disponible</p>';
-    }
 }
 
 function sweentAlert(posicion, estado, mensaje, duracion) {
