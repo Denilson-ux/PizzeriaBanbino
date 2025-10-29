@@ -19,7 +19,8 @@
 
   <link rel="stylesheet" type="text/css" href="{{asset('/feane/css/bootstrap.css')}}" />
   <link rel="stylesheet" type="text/css" href="{{asset('/feane/css/carousel.min.css')}}" />
-  <link rel="stylesheet" href="{{asset('/feane/css/select.min.css')}}" integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ==" crossorigin="anonymous" />
+  <!-- QUITADO INTEGRITY DE SELECT -->
+  <link rel="stylesheet" href="{{asset('/feane/css/select.min.css')}}" />
   <link href="{{asset('/feane/css/font-awesome.min.css')}}" rel="stylesheet" />
   <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   <link href="{{asset('/feane/css/style.css')}}" rel="stylesheet" />
@@ -262,14 +263,12 @@
 
  
 
-  <!-- popper js -->
-  <script src="{{asset('/feane/js/popper.min.js')}}" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
-  </script>
+  <!-- popper js - QUITADO INTEGRITY -->
+  <script src="{{asset('/feane/js/popper.min.js')}}"></script>
   <!-- bootstrap js -->
   <script src="{{asset('/feane/js/bootstrap.js')}}"></script>
   <!-- owl slider -->
-  <script src="{{asset('/feane/js/carousel.min.js')}}">
-  </script>
+  <script src="{{asset('/feane/js/carousel.min.js')}}"></script>
   <!-- isotope js -->
   <script src="{{asset('/feane/js/isotope-layout@3.0.4_dist_isotope.pkgd.min.js')}}"></script>
   <!-- nice select -->
