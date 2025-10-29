@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
+        // Ejecutar seeders en orden lógico
+        $this->call(PermissionSeeder::class); // Primero crear permisos
         $this->call(RolesSeeder::class);
         $this->call(RolSeeder::class); //Porque y no da tiempo de camibarlo ;v
         $this->call(PersonaSeeder::class);
