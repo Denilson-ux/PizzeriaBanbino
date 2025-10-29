@@ -116,8 +116,8 @@
 
 @section('clienteweb-js')
 
-    <!-- PayPal SDK CON TU CLIENT ID REAL - SANDBOX -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AX6TnbqufMrXgzGVHsPMQcvU-dXckOwEStdLVnvL-Mcas7jsiZd8EfVn8oqkIYiHJL5qbUn8YWYCVRh4J&currency=USD&locale=es_ES&components=buttons"></script>
+    <!-- PayPal SDK CON CLIENT ID QUE SÍ FUNCIONA - SANDBOX -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AbQyHajdQyyBFypsin_o4lg0qn5juhzUapqEAFn-pKjKfabG1SjdAyKd4jk4-hvlZj_JdgAm_letmzNi&currency=USD&locale=es_ES&components=buttons"></script>
 
     <!-- Maps -->
     <script async defer
