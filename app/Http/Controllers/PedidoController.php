@@ -20,6 +20,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PedidoController extends Controller
 {
@@ -83,7 +84,39 @@ class PedidoController extends Controller
     {
         try {
             $datos = $request->json()->all();
+            
+            // Log para debugging
+            Log::info('Datos recibidos para pedido:', $datos);
+            
+            // Validar que el cliente existe
+            $cliente = Cliente::find($datos['id_cliente']);
+            if (!$cliente) {
+                return [
+                    'message' => 'Cliente no encontrado con ID: ' . $datos['id_cliente'],
+                    'status' => 400,
+                    'error' => 'Cliente inexistente'
+                ];
+            }
+            
+            // Validar que los items existen
+            if (!isset($datos['items_menu']) || empty($datos['items_menu'])) {
+                return [
+                    'message' => 'No hay items en el pedido',
+                    'status' => 400,
+                    'error' => 'Items faltantes'
+                ];
+            }
+            
+            // Validar ubicación
+            if (!isset($datos['latitud']) || !isset($datos['longitud']) || !isset($datos['referencia'])) {
+                return [
+                    'message' => 'Datos de ubicación incompletos',
+                    'status' => 400,
+                    'error' => 'Ubicación faltante'
+                ];
+            }
 
+            // Crear ubicación
             $ubicacion = Ubicacion::create([
                 'latitud' => $datos['latitud'],
                 'longitud' => $datos['longitud'],
@@ -92,55 +125,89 @@ class PedidoController extends Controller
 
             $idUbicacion = $ubicacion->id_ubicacion;
 
-            $pedido = Pedido::create([
-                'monto' => $datos['monto'],
-                'fecha' => $datos['fecha'],
-                'id_repartidor' => $datos['id_repartidor'],
+            // Preparar datos del pedido con valores por defecto
+            $datosPedido = [
+                'monto' => $datos['monto'] ?? 0,
+                'fecha' => $datos['fecha'] ?? date('Y-m-d'),
+                'id_repartidor' => $datos['id_repartidor'] ?? null,
                 'id_cliente' => $datos['id_cliente'],
-                'id_tipo_pago' => $datos['id_tipo_pago'],
-                'estado_pedido' => $datos['estado_pedido'],
-                'nro_transaccion' => $datos['nro_transaccion'],
-                'descripcion_pago' => $datos['descripcion_pago'],
+                'id_tipo_pago' => $datos['id_tipo_pago'] ?? 1, // 1 = efectivo por defecto
+                'estado_pedido' => $datos['estado_pedido'] ?? 'Pendiente',
+                'nro_transaccion' => $datos['nro_transaccion'] ?? null,
+                'descripcion_pago' => $datos['descripcion_pago'] ?? null,
                 'id_ubicacion' => $idUbicacion,
-            ]);
+                'estado' => 1 // Activo por defecto
+            ];
+            
+            Log::info('Datos del pedido a crear:', $datosPedido);
+
+            $pedido = Pedido::create($datosPedido);
 
             $idPedido = $pedido->id_pedido;
             $items = $datos['items_menu'];
 
             foreach ($items as $item) {
+                // Validar que el item tenga los datos necesarios
+                if (!isset($item['id_item_menu']) || !isset($item['id_menu'])) {
+                    Log::warning('Item sin datos completos:', $item);
+                    continue;
+                }
+                
                 DetallePedido::create([
                     'id_pedido' => $idPedido,
                     'id_item_menu' => $item['id_item_menu'],
                     'id_menu' => $item['id_menu'],
-                    'sub_monto' => $item['sub_monto'],
-                    'cantidad' => $item['cantidad'],
+                    'sub_monto' => $item['sub_monto'] ?? 0,
+                    'cantidad' => $item['cantidad'] ?? 1,
                 ]);
 
+                // Actualizar stock solo si existe el registro
                 $menuItemMenu = MenuItemMenu::where('id_menu', $item['id_menu'])
                     ->where('id_item_menu', $item['id_item_menu'])
                     ->first();
 
-                $sql = "UPDATE menu_item_menu 
-                        SET cantidad = ? 
-                        WHERE id_menu = ? 
-                        AND id_item_menu = ?";
-                $cantidad = $menuItemMenu->cantidad - (int)$item['cantidad'];
+                if ($menuItemMenu) {
+                    $sql = "UPDATE menu_item_menu 
+                            SET cantidad = ? 
+                            WHERE id_menu = ? 
+                            AND id_item_menu = ?";
+                    $cantidad = $menuItemMenu->cantidad - (int)($item['cantidad'] ?? 1);
 
-                DB::update($sql, [
-                    $cantidad,
-                    $item['id_menu'],
-                    $item['id_item_menu'],
-                ]); 
+                    DB::update($sql, [
+                        max(0, $cantidad), // No permitir cantidades negativas
+                        $item['id_menu'],
+                        $item['id_item_menu'],
+                    ]); 
+                }
             }
 
             $response = [
-                'message' => 'Registro insertado correctamente.',
+                'message' => 'Pedido registrado correctamente.',
                 'status' => 200,
                 'data' => $pedido,
             ];
-        } catch (\Exception $e) {
+            
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Error de BD al crear pedido:', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'datos' => $datos ?? []
+            ]);
+            
             $response = [
-                'message' => 'Error al insertar el registro.',
+                'message' => 'Error en la base de datos al crear el pedido.',
+                'status' => 500,
+                'error' => 'Error de BD: ' . $e->getMessage(),
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Error general al crear pedido:', [
+                'error' => $e->getMessage(),
+                'datos' => $datos ?? []
+            ]);
+            
+            $response = [
+                'message' => 'Error al crear el pedido.',
                 'status' => 500,
                 'error' => $e->getMessage(),
             ];
