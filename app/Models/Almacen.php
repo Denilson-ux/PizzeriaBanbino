@@ -5,14 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo legacy para compatibilidad.
+ * La nueva estructura usa Almacenes (almacenes físicos) e InventarioAlmacen (stock por almacén-ingrediente)
+ * Este modelo queda para compatibilidad con código existente.
+ */
 class Almacen extends Model
 {
     use HasFactory;
 
-    protected $table = 'almacen';
-    protected $primaryKey = 'id_almacen';
+    // Mapear a la nueva tabla de inventario para compatibilidad temporal
+    protected $table = 'inventario_almacen';
+    protected $primaryKey = 'id_inventario';
     
     protected $fillable = [
+        'id_almacen',
         'id_ingrediente',
         'stock_actual',
         'stock_minimo',
@@ -45,11 +52,11 @@ class Almacen extends Model
     }
 
     /**
-     * Relación con movimientos de almacén
+     * Relación con almacén físico
      */
-    public function movimientos()
+    public function almacenFisico()
     {
-        return $this->hasMany(MovimientoAlmacen::class, 'id_ingrediente', 'id_ingrediente');
+        return $this->belongsTo(Almacenes::class, 'id_almacen', 'id_almacen');
     }
 
     /**
@@ -78,13 +85,11 @@ class Almacen extends Model
 
     /**
      * Aumentar stock (por compras)
-     * Actualiza el costo promedio ponderado
      */
     public function aumentarStock($cantidad, $costoUnitario = null)
     {
         $stockAnterior = $this->stock_actual;
         
-        // Actualizar costo promedio ponderado si se proporciona costo
         if ($costoUnitario !== null && $cantidad > 0) {
             $valorStockAnterior = $stockAnterior * $this->costo_unitario_promedio;
             $valorNuevoStock = $cantidad * $costoUnitario;
@@ -127,32 +132,6 @@ class Almacen extends Model
     }
 
     /**
-     * Ajustar stock (para corrección de inventario)
-     */
-    public function ajustarStock($nuevoStock, $observaciones = null)
-    {
-        $stockAnterior = $this->stock_actual;
-        $this->stock_actual = $nuevoStock;
-        $this->save();
-        
-        // Registrar movimiento de ajuste
-        MovimientoAlmacen::create([
-            'id_ingrediente' => $this->id_ingrediente,
-            'tipo_movimiento' => 'ajuste',
-            'cantidad' => abs($nuevoStock - $stockAnterior),
-            'unidad_medida' => $this->unidad_medida,
-            'stock_anterior' => $stockAnterior,
-            'stock_posterior' => $nuevoStock,
-            'referencia_tipo' => 'ajuste_manual',
-            'observaciones' => $observaciones,
-            'usuario_id' => auth()->id(),
-            'fecha_movimiento' => now()
-        ]);
-        
-        return $this;
-    }
-
-    /**
      * Scope para stock bajo
      */
     public function scopeStockBajo($query)
@@ -174,15 +153,6 @@ class Almacen extends Model
     public function scopeActivos($query)
     {
         return $query->where('estado', 'activo');
-    }
-
-    /**
-     * Scope para productos próximos a vencer
-     */
-    public function scopeProximosVencer($query, $dias = 7)
-    {
-        return $query->where('fecha_vencimiento', '<=', now()->addDays($dias))
-                    ->whereNotNull('fecha_vencimiento');
     }
 
     /**
