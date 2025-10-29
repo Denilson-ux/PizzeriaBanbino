@@ -190,24 +190,18 @@ $("input[type='radio']").change(function () {
     }
 });
 
-/// GOOGLE MAPS
+/// GOOGLE MAPS - Updated for latest API
 function initMap() {
     if (typeof google === 'undefined' || !google.maps) {
         console.error('Google Maps API not available');
+        showMapError();
         return;
     }
 
     try {
         const latitud = -17.7962;
         const longitud = -63.1814;
-        var myLatLng = { lat: latitud, lng: longitud };
-        var mapOptions = {
-            center: myLatLng,
-            zoom: 13,
-            streetViewControl: false,
-            mapTypeControl: true,
-            fullscreenControl: true,
-        };
+        const myLatLng = { lat: latitud, lng: longitud };
         
         const mapContainer = document.getElementById('map');
         if (!mapContainer) {
@@ -215,14 +209,28 @@ function initMap() {
             return;
         }
 
+        // Initialize map with updated configuration
+        const mapOptions = {
+            center: myLatLng,
+            zoom: 13,
+            streetViewControl: false,
+            mapTypeControl: true,
+            fullscreenControl: true,
+            zoomControl: true,
+            mapId: null // Using default map styling
+        };
+        
         map = new google.maps.Map(mapContainer, mapOptions);
-        marker = new google.maps.Marker({
+        
+        // Create marker with updated API
+        marker = new google.maps.marker.AdvancedMarkerElement({
             position: myLatLng,
             map: map,
-            draggable: true,
             title: 'Arrastra para cambiar ubicación',
+            gmpDraggable: true
         });
 
+        // Add event listeners
         markerListenerDragend(marker);
         mapListenerClick(map, marker);
         initAutoComplete(map, marker);
@@ -232,7 +240,58 @@ function initMap() {
         
     } catch (error) {
         console.error('Error initializing map:', error);
-        sweentAlert("top-end", "error", "Error al cargar el mapa. Por favor recarga la página.", 3000);
+        showMapError();
+        // Fallback to legacy marker if AdvancedMarkerElement fails
+        try {
+            initMapWithLegacyMarker();
+        } catch (fallbackError) {
+            console.error('Fallback initialization also failed:', fallbackError);
+        }
+    }
+}
+
+// Fallback function using legacy marker
+function initMapWithLegacyMarker() {
+    const latitud = -17.7962;
+    const longitud = -63.1814;
+    const myLatLng = { lat: latitud, lng: longitud };
+    
+    const mapContainer = document.getElementById('map');
+    const mapOptions = {
+        center: myLatLng,
+        zoom: 13,
+        streetViewControl: false,
+        mapTypeControl: true,
+        fullscreenControl: true,
+    };
+    
+    map = new google.maps.Map(mapContainer, mapOptions);
+    marker = new google.maps.Marker({
+        position: myLatLng,
+        map: map,
+        draggable: true,
+        title: 'Arrastra para cambiar ubicación',
+    });
+
+    markerListenerDragend(marker);
+    mapListenerClick(map, marker);
+    initAutoComplete(map, marker);
+    
+    googleMapsLoaded = true;
+    console.log('Map initialized with legacy marker');
+}
+
+function showMapError() {
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        mapContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background-color: #f5f5f5; color: #666; flex-direction: column; padding: 20px; text-align: center; border-radius: 8px;">
+                <h5 style="color: #d32f2f; margin-bottom: 10px;">⚠️ Error del Mapa</h5>
+                <p style="margin: 5px 0;">No se pudo cargar Google Maps.</p>
+                <p style="margin: 5px 0; font-size: 12px;">Puedes escribir tu dirección manualmente en el campo de arriba.</p>
+                <button onclick="window.location.reload()" style="margin-top: 10px; padding: 8px 16px; background-color: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">Recargar Página</button>
+            </div>
+        `;
     }
 }
 
@@ -242,7 +301,13 @@ function mapListenerClick(map, marker) {
             const clickedLat = event.latLng.lat();
             const clickedLng = event.latLng.lng();
 
-            marker.setPosition(event.latLng);
+            // Handle both AdvancedMarkerElement and legacy Marker
+            if (marker.position) {
+                marker.position = event.latLng;
+            } else {
+                marker.setPosition(event.latLng);
+            }
+            
             $("#latitud").val(clickedLat);
             $("#longitud").val(clickedLng);
             localizacionInversa(event);
@@ -253,14 +318,32 @@ function mapListenerClick(map, marker) {
 }
 
 function markerListenerDragend(marker) {
-    google.maps.event.addListener(marker, 'dragend', function(event) {
+    // Handle both AdvancedMarkerElement and legacy Marker events
+    const eventType = marker.gmpDraggable ? 'gmp-dragend' : 'dragend';
+    
+    marker.addListener(eventType, function(event) {
         try {
-            const latitud = this.getPosition().lat();
-            const longitud = this.getPosition().lng();
+            let position;
+            if (marker.position && typeof marker.position.lat === 'function') {
+                position = marker.position;
+            } else if (this.getPosition) {
+                position = this.getPosition();
+            } else {
+                console.error('Unable to get marker position');
+                return;
+            }
+
+            const latitud = position.lat();
+            const longitud = position.lng();
 
             $("#latitud").val(latitud);
             $("#longitud").val(longitud);
-            localizacionInversa(event);
+            
+            // Create event object for reverse geocoding
+            const geoEvent = {
+                latLng: position
+            };
+            localizacionInversa(geoEvent);
         } catch (error) {
             console.error('Error in marker drag handler:', error);
         }
@@ -275,39 +358,46 @@ function initAutoComplete(map, marker) {
             return;
         }
 
-        // Establecer límites geográficos para Bolivia
-        const center = {
-            lat: -16.290154,
-            lng: -63.588653
-        };
+        // Check if Places library is available
+        if (!google.maps.places) {
+            console.error('Places library not loaded');
+            return;
+        }
 
-        const defaultBounds = {
-            north: center.lat + 0.5, 
-            south: center.lat - 0.5, 
-            east: center.lng + 0.5, 
-            west: center.lng - 0.5, 
-        };
+        // Bolivia bounds
+        const boliviaBounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(-22.896133, -69.640388), // Southwest
+            new google.maps.LatLng(-9.680567, -57.453803)   // Northeast
+        );
 
         const options = {
-            bounds: defaultBounds, 
-            componentRestrictions: { country: "bo" }, 
-            fields: ["address_components", "geometry", "icon", "name"],
+            bounds: boliviaBounds,
+            componentRestrictions: { country: "bo" },
+            fields: ["address_components", "geometry", "name"],
             strictBounds: false,
-            types: [],
         };
 
-        let autoComplete = new google.maps.places.Autocomplete(inputDireccionCliente, options);
+        const autoComplete = new google.maps.places.Autocomplete(inputDireccionCliente, options);
 
         autoComplete.addListener('place_changed', function(){
             try {
                 const place = autoComplete.getPlace();
 
                 if (place.geometry && place.geometry.location) {
-                    map.setCenter(place.geometry.location);
-                    marker.setPosition(place.geometry.location);
-                    $("#latitud").val(place.geometry.location.lat());
-                    $("#longitud").val(place.geometry.location.lng());
-                    smoothZoom(map, 15, 500);
+                    const location = place.geometry.location;
+                    map.setCenter(location);
+                    
+                    // Handle both marker types
+                    if (marker.position) {
+                        marker.position = location;
+                    } else {
+                        marker.setPosition(location);
+                    }
+                    
+                    $("#latitud").val(location.lat());
+                    $("#longitud").val(location.lng());
+                    
+                    map.setZoom(15);
                 } else {
                     console.log("La ubicación del lugar no está definida correctamente.");
                     sweentAlert("top-end", "warning", "No se pudo obtener la ubicación del lugar seleccionado.", 2000);
@@ -328,10 +418,9 @@ function localizacionInversa(event) {
             return;
         }
         
-        // Obtener la dirección inversa utilizando Geocoding
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ 'location': event.latLng }, function(results, status) {
-            if (status === 'OK' || status === google.maps.GeocoderStatus.OK) {
+            if (status === 'OK') {
                 if (results[0]) {
                     const formattedAddress = results[0].formatted_address;
                     $("#direccion").val(formattedAddress);
@@ -344,33 +433,6 @@ function localizacionInversa(event) {
         });
     } catch (error) {
         console.error('Error in reverse geocoding:', error);
-    }
-}
-
-// Función para realizar el zoom suave
-function smoothZoom(map, targetZoom, duration) {
-    try {
-        const currentZoom = map.getZoom();
-        if (currentZoom === targetZoom) return;
-        
-        const steps = Math.abs(currentZoom - targetZoom);
-        const delay = duration / steps;
-
-        if (currentZoom < targetZoom) {
-            for (let i = currentZoom; i < targetZoom; i++) {
-                setTimeout(function () {
-                    map.setZoom(i + 1);
-                }, i * delay);
-            }
-        } else if (currentZoom > targetZoom) {
-            for (let i = currentZoom; i > targetZoom; i--) {
-                setTimeout(function () {
-                    map.setZoom(i - 1);
-                }, (currentZoom - i) * delay);
-            }
-        }
-    } catch (error) {
-        console.error('Error in smooth zoom:', error);
     }
 }
 
@@ -387,7 +449,7 @@ function ubicacionActual() {
                 let errorMessage = "Error al obtener la ubicación: ";
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMessage += "Permiso denegado";
+                        errorMessage += "Permiso denegado. Por favor, permite el acceso a tu ubicación.";
                         break;
                     case error.POSITION_UNAVAILABLE:
                         errorMessage += "Ubicación no disponible";
@@ -406,7 +468,7 @@ function ubicacionActual() {
                 maximumAge: 60000
             });
         } else {
-            reject("El navegador no soporta la geolocalización");
+            reject("Tu navegador no soporta geolocalización");
         }
     });
 }
@@ -420,7 +482,6 @@ function ubicacionActualReady() {
     ubicacionActual()
         .then((posicion) => {
             try {
-                // Create a proper LatLng object for reverse geocoding
                 const latLng = new google.maps.LatLng(posicion.lat, posicion.lng);
                 localizacionInversa({ latLng: latLng });
                 
@@ -428,8 +489,15 @@ function ubicacionActualReady() {
                 $("#longitud").val(posicion.lng);
                 
                 map.setCenter(posicion);
-                marker.setPosition(posicion);
-                smoothZoom(map, 15, 500);
+                
+                // Handle both marker types
+                if (marker.position) {
+                    marker.position = latLng;
+                } else {
+                    marker.setPosition(posicion);
+                }
+                
+                map.setZoom(15);
                 
                 console.log('Ubicación obtenida correctamente:', posicion);
                 sweentAlert("top-end", "success", "Ubicación actual obtenida", 1500);
@@ -456,7 +524,7 @@ if (typeof paypal !== 'undefined') {
             return actions.order.create({
                 purchase_units: [{
                     amount: {
-                        value: montoDolar(total) // valor de compra
+                        value: montoDolar(total)
                     }
                 }]
             });
@@ -492,7 +560,6 @@ function sweentAlert(posicion, estado, mensaje, duracion) {
             }
         });
     } else {
-        // Fallback to alert if SweetAlert is not available
         alert(mensaje);
     }
 }
