@@ -1,158 +1,44 @@
-// Google Maps initialization script
-// Updated with new API key: AIzaSyAtjzxI9iVgpXTkQ6kFJ33RA5oGngdS6d0
+// Google Maps initialization script - Updated for latest API version
+// API Key: AIzaSyAtjzxI9iVgpXTkQ6kFJ33RA5oGngdS6d0
+// Make sure Places API is enabled in Google Cloud Console
 
-// Callback function for Google Maps API
+// Global callback function for Google Maps API
 function initMap() {
-    // This function will be called when Google Maps API is loaded
-    if (typeof google !== 'undefined' && google.maps) {
-        console.log('Google Maps API loaded successfully');
-        // Trigger custom event to notify that Maps API is ready
+    console.log('Google Maps API loaded successfully');
+    // Trigger custom event to notify that Maps API is ready
+    if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('googleMapsLoaded'));
-    } else {
-        console.error('Google Maps API failed to load');
     }
 }
 
-// Function to initialize Google Maps for address input
-function initAddressMap() {
-    if (typeof google === 'undefined' || !google.maps) {
-        console.error('Google Maps API not loaded');
-        return;
-    }
-
-    const mapElement = document.getElementById('map');
-    const addressInput = document.getElementById('direccion');
-    
-    if (!mapElement || !addressInput) {
-        console.error('Map container or address input not found');
-        return;
-    }
-
-    // Default map center (you can change this to your city coordinates)
-    const defaultCenter = { lat: -17.7833, lng: -63.1822 }; // Santa Cruz, Bolivia coordinates
-    
-    // Initialize map
-    const map = new google.maps.Map(mapElement, {
-        zoom: 13,
-        center: defaultCenter,
-    });
-
-    // Create marker
-    const marker = new google.maps.Marker({
-        position: defaultCenter,
-        map: map,
-        draggable: true,
-    });
-
-    // Initialize autocomplete
-    const autocomplete = new google.maps.places.Autocomplete(addressInput, {
-        componentRestrictions: { country: 'bo' }, // Restrict to Bolivia
-        fields: ['address_components', 'geometry', 'name'],
-    });
-
-    // When user selects an address from autocomplete
-    autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) {
-            console.error('No geometry data for selected place');
-            return;
-        }
-
-        const location = place.geometry.location;
-        map.setCenter(location);
-        marker.setPosition(location);
-        
-        // Update hidden fields with coordinates
-        const latInput = document.getElementById('latitud');
-        const lngInput = document.getElementById('longitud');
-        if (latInput) latInput.value = location.lat();
-        if (lngInput) lngInput.value = location.lng();
-    });
-
-    // When user drags the marker
-    marker.addListener('dragend', (event) => {
-        const position = marker.getPosition();
-        map.panTo(position);
-        
-        // Update hidden fields with new coordinates
-        const latInput = document.getElementById('latitud');
-        const lngInput = document.getElementById('longitud');
-        if (latInput) latInput.value = position.lat();
-        if (lngInput) lngInput.value = position.lng();
-
-        // Reverse geocoding to get address from coordinates
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: position }, (results, status) => {
-            if (status === 'OK' && results[0]) {
-                addressInput.value = results[0].formatted_address;
-            }
-        });
-    });
-
-    // Current location button functionality
-    const locationButton = document.getElementById('ubicacion-actual-btn');
-    if (locationButton) {
-        locationButton.addEventListener('click', () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        };
-                        
-                        map.setCenter(userLocation);
-                        marker.setPosition(userLocation);
-                        
-                        // Update hidden fields
-                        const latInput = document.getElementById('latitud');
-                        const lngInput = document.getElementById('longitud');
-                        if (latInput) latInput.value = userLocation.lat;
-                        if (lngInput) lngInput.value = userLocation.lng;
-
-                        // Get address for current location
-                        const geocoder = new google.maps.Geocoder();
-                        geocoder.geocode({ location: userLocation }, (results, status) => {
-                            if (status === 'OK' && results[0]) {
-                                addressInput.value = results[0].formatted_address;
-                            }
-                        });
-                    },
-                    () => {
-                        console.error('Error getting current location');
-                        alert('No se pudo obtener tu ubicación actual');
-                    }
-                );
-            } else {
-                alert('Tu navegador no soporta geolocalización');
-            }
-        });
-    }
-}
-
-// Load Google Maps API with the updated API key
+// Load Google Maps API with the updated API key - simplified version
 function loadGoogleMapsAPI() {
     // Check if API is already loaded
     if (typeof google !== 'undefined' && google.maps) {
         console.log('Google Maps API already loaded');
-        initAddressMap();
         return;
     }
     
+    // Create script tag for Google Maps API
     const script = document.createElement('script');
-    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAtjzxI9iVgpXTkQ6kFJ33RA5oGngdS6d0&callback=initMap&libraries=places&language=es&region=BO';
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAtjzxI9iVgpXTkQ6kFJ33RA5oGngdS6d0&callback=initMap&libraries=places&v=weekly&language=es&region=BO';
     script.async = true;
     script.defer = true;
     script.onerror = function() {
-        console.error('Error loading Google Maps API - Please check API key and permissions');
+        console.error('Error loading Google Maps API - Check API key and enabled services');
+        // Show user-friendly error message
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+            mapContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background-color: #f5f5f5; color: #666; flex-direction: column; padding: 20px; text-align: center;">
+                    <h5 style="color: #d32f2f; margin-bottom: 10px;">⚠️ Error al cargar el mapa</h5>
+                    <p style="margin: 5px 0;">No se pudo conectar con Google Maps.</p>
+                    <p style="margin: 5px 0; font-size: 12px;">Por favor, recarga la página o contacta al administrador.</p>
+                </div>
+            `;
+        }
     };
     document.head.appendChild(script);
-}
-
-// Initialize map when API is loaded
-function initMap() {
-    console.log('Google Maps API loaded successfully');
-    initAddressMap();
 }
 
 // Auto-load the API when this script is executed
