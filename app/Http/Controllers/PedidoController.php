@@ -15,7 +15,6 @@ use App\Models\Persona;
 use App\Models\Repartidor;
 use App\Models\Ubicacion;
 use App\Models\User;
-use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -30,9 +29,9 @@ class PedidoController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('pedidos'))) {
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('pedidos')) {
             return redirect()->to('admin/rol-error');
-        };
+        }
         return view('pizzeria.pedido.index');
     }
 
@@ -45,9 +44,10 @@ class PedidoController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('mispedidos'))) {
+        // Usar el permiso 'pedidos' o permitir Administrador; no existe 'mispedidos' en el seeder
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('pedidos')) {
             return redirect()->to('admin/rol-error');
-        };
+        }
 
         $user = $user->load('rol', 'persona');
         return view('pizzeria.pedido.mispedidos', ['user' => $user]);
@@ -64,14 +64,12 @@ class PedidoController extends Controller
             'ubicacion',
         ])->get();
 
-        //Ver la manera de mejorar esta parte, con las relaciones de laravel
         foreach ($pedidos as $pedido) {
             if ($pedido['repartidor'] != null) {
                 $idRepartidor = $pedido['repartidor']['id_repartidor'];
                 $personaRepartidor = Persona::findOrFail($idRepartidor);
                 $pedido['repartidor']['persona'] = $personaRepartidor;
             }
-
 
             $idCliente = $pedido['cliente']['id_cliente'];
             $personaCliente = Persona::findOrFail($idCliente);
@@ -86,7 +84,6 @@ class PedidoController extends Controller
         try {
             $datos = $request->json()->all();
 
-            //Insertar ubicacion
             $ubicacion = Ubicacion::create([
                 'latitud' => $datos['latitud'],
                 'longitud' => $datos['longitud'],
@@ -95,7 +92,6 @@ class PedidoController extends Controller
 
             $idUbicacion = $ubicacion->id_ubicacion;
 
-            //Insertar pedido
             $pedido = Pedido::create([
                 'monto' => $datos['monto'],
                 'fecha' => $datos['fecha'],
@@ -108,7 +104,6 @@ class PedidoController extends Controller
                 'id_ubicacion' => $idUbicacion,
             ]);
 
-            //insertar detalle pedido
             $idPedido = $pedido->id_pedido;
             $items = $datos['items_menu'];
 
@@ -121,8 +116,6 @@ class PedidoController extends Controller
                     'cantidad' => $item['cantidad'],
                 ]);
 
-
-                //actualizar cantidad en menu_item_menu con sql puro (porque es llave compuesta)
                 $menuItemMenu = MenuItemMenu::where('id_menu', $item['id_menu'])
                     ->where('id_item_menu', $item['id_item_menu'])
                     ->first();
@@ -190,7 +183,6 @@ class PedidoController extends Controller
                     'pedido.tipoPago'
                 ]);
 
-        //Corregir las relacioens en laravel para evitar esto (por la herencia)
         foreach ($repartidor['pedido'] as $pedido) {
             $pedido['cliente']['persona'] = Persona::findOrFail($pedido['cliente']['id_cliente']);
             $pedido['repartidor']['persona'] = Persona::findOrFail($pedido['repartidor']['id_repartidor']);
@@ -204,7 +196,6 @@ class PedidoController extends Controller
         $response = [];
 
         try {
-
             $datos = $request->json()->all();
             if (!$pedido) {
                 $response = [
@@ -212,8 +203,6 @@ class PedidoController extends Controller
                     'status' => 404,
                 ];
             } else {
-
-                // Actualizar pedido
                 $pedido->update([
                     'id_repartidor' => $datos['id_repartidor'],
                     'estado_pedido' => $datos['estado_pedido'],
@@ -227,7 +216,6 @@ class PedidoController extends Controller
                 ];
             }
         } catch (\Exception $e) {
-
             $response = [
                 'message' => 'Error al actualizar el registro.',
                 'status' => 500,
@@ -243,7 +231,6 @@ class PedidoController extends Controller
         $response = [];
 
         try {
-
             $datos = $request->json()->all();
             if (!$pedido) {
                 $response = [
@@ -251,8 +238,6 @@ class PedidoController extends Controller
                     'status' => 404,
                 ];
             } else {
-
-                // Actualizar pedido
                 $pedido->update([
                     'nro_transaccion' => $datos['nro_transaccion'],
                     'descripcion_pago' => $datos['descripcion_pago'],
@@ -265,7 +250,6 @@ class PedidoController extends Controller
                 ];
             }
         } catch (\Exception $e) {
-
             $response = [
                 'message' => 'Error al actualizar el registro.',
                 'status' => 500,
@@ -276,13 +260,10 @@ class PedidoController extends Controller
         return $response;
     }
 
-
-    //Sin uso
     public function destroy(Pedido $pedido)
     {
         $response = [];
         try {
-
             $pedido->update(['estado' => 0]);
             $response = [
                 'message' => 'Registro eliminado correctamente.',
@@ -305,32 +286,19 @@ class PedidoController extends Controller
         return json_encode($response);
     }
 
-    //Sin uso
     public function eliminados()
     {
         $data = Pedido::where('estado', 0);
         return new PedidoCollection($data->get());
     }
 
-    //Sin uso
     public function restaurar(Pedido $pedido)
     {
-        $response = [];
         try {
             $pedido->update(['estado' => 1]);
-
-            $response = [
-                'message' => 'Se restauró correctamente.',
-                'status' => 200,
-                'msg' => $pedido
-            ];
+            return response()->json(['message' => 'Se restauró correctamente.', 'status' => 200, 'msg' => $pedido]);
         } catch (\Exception $e) {
-            $response = [
-                'message' => 'La error al resturar.',
-                'status' => 500,
-                'error' => $e
-            ];
+            return response()->json(['message' => 'La error al resturar.', 'status' => 500, 'error' => $e]);
         }
-        return response()->json($response);
     }
 }
