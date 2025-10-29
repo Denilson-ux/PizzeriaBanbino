@@ -46,7 +46,7 @@
             <div class="col-md-3"><x-adminlte-small-box title="{{ $estadisticas['total_ingredientes'] }}" text="Ingredientes" icon="fas fa-boxes" theme="primary"/></div>
             <div class="col-md-3"><x-adminlte-small-box title="{{ $estadisticas['productos_con_stock'] }}" text="Con stock" icon="fas fa-check-circle" theme="success"/></div>
             <div class="col-md-3"><x-adminlte-small-box title="{{ $estadisticas['productos_stock_bajo'] }}" text="Stock bajo" icon="fas fa-exclamation-triangle" theme="warning"/></div>
-            <div class="col-md-3"><x-adminlte-small-box title="S/. {{ number_format($estadisticas['valor_total_inventario'],2) }}" text="Valor total" icon="fas fa-dollar-sign" theme="info"/></div>
+            <div class="col-md-3"><x-adminlte-small-box title="{{ formatCurrency($estadisticas['valor_total_inventario'],2) }}" text="Valor total" icon="fas fa-dollar-sign" theme="info"/></div>
         </div>
     </div>
 </div>
@@ -80,8 +80,8 @@
                                 <td><span class="font-weight-bold {{ $item->stock_actual <= 0 ? 'text-danger' : ($item->stock_bajo ? 'text-warning' : 'text-success') }}">{{ number_format($item->stock_actual,2) }}</span></td>
                                 <td><small>Min: {{ number_format($item->stock_minimo,2) }}<br>Máx: {{ number_format($item->stock_maximo,2) }}</small></td>
                                 <td>{{ $item->unidad_medida }}</td>
-                                <td>S/. {{ number_format($item->costo_unitario_promedio,2) }}</td>
-                                <td>S/. {{ number_format($item->valor_total_stock,2) }}</td>
+                                <td>{{ formatCurrency($item->costo_unitario_promedio,2) }}</td>
+                                <td>{{ formatCurrency($item->valor_total_stock,2) }}</td>
                                 <td><span class="badge badge-{{ $item->estado=='activo'?'success':'danger' }}">{{ ucfirst($item->estado) }}</span></td>
                                 <td>{{ $item->ubicacion_fisica ?? 'No especificada' }}</td>
                             </tr>
@@ -114,7 +114,7 @@
                         @foreach($compras as $compra)
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div><strong>{{ $compra->numero_compra }}</strong><br><small class="text-muted">{{ $compra->proveedor->nombre ?? 'Sin proveedor' }}</small></div>
-                            <div class="text-right"><span class="text-success font-weight-bold">S/. {{ number_format($compra->total,2) }}</span><br><small class="text-muted">{{ $compra->fecha_compra->format('d/m/Y') }}</small></div>
+                            <div class="text-right"><span class="text-success font-weight-bold">{{ formatCurrency($compra->total,2) }}</span><br><small class="text-muted">{{ $compra->fecha_compra->format('d/m/Y') }}</small></div>
                         </div>
                         @endforeach
                     </div>
