@@ -178,47 +178,96 @@ $(document).on("click", "#confirmar-pedido", () => {
 function savePedido(nro_transaccion = null, descripcion_pago = null) {
     let carritomall = JSON.parse(localStorage.getItem('carritomall'));
     const clienteMall = JSON.parse(localStorage.getItem('clientemall'));
+    
+    // Validar que tenemos la información necesaria
+    if (!clienteMall || !clienteMall.id_cliente) {
+        sweentAlert("top-end", "error", "Error: Información de cliente no encontrada. Inicia sesión nuevamente.", 3000);
+        return;
+    }
+    
+    if (!carritomall || carritomall.length === 0) {
+        sweentAlert("top-end", "error", "Error: No hay productos en el carrito.", 2000);
+        return;
+    }
+    
     carritomall = castearCarrito(carritomall);
     const data = {};
     const montos = montoTotal(carritomall, 0);
+    
     data.monto = parseFloat(montos.monto);
     data.fecha = obtenerFechaActual();
     data.id_repartidor = null;
-    data.id_cliente = clienteMall.id_cliente;
+    data.id_cliente = parseInt(clienteMall.id_cliente); // Asegurar que sea entero
     data.id_tipo_pago = metodoPago; 
     data.estado_pedido = "Pendiente";
     data.nro_transaccion = nro_transaccion;
     data.descripcion_pago = descripcion_pago;
-    data.latitud = $("#latitud").val();
-    data.longitud = $("#longitud").val();
-    data.referencia = $("#direccion").val();
+    data.latitud = parseFloat($("#latitud").val());
+    data.longitud = parseFloat($("#longitud").val());
+    data.referencia = $("#direccion").val() || "Dirección no especificada";
     data.items_menu = carritomall;
+    
+    // Log para debugging
+    console.log('Datos del pedido a enviar:', data);
+    console.log('Cliente info:', clienteMall);
     
     const datosEnviar = JSON.stringify(data);
     const url = rutaApiRest + "pedido";
     showLoader();
+    
     $.ajax({
         url: url,
         type: "POST",
         data: datosEnviar,
+        contentType: "application/json",
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'Accept': 'application/json'
+        },
         success: function (response) {
-            console.log(response);
+            console.log('Respuesta del servidor:', response);
             const status = response.status;
             if (status == 200) {
                 const data = response.data;
                 sweentAlert("top-end", "success", "Pedido realizado correctamente", 1500);
                 localStorage.removeItem('carritomall');
-                window.location.href = rutaLocal + "detalle/" + data.id_pedido;
+                // Redirigir al detalle del pedido si existe la ruta
+                if (data && data.id_pedido) {
+                    setTimeout(() => {
+                        window.location.href = rutaLocal + "detalle/" + data.id_pedido;
+                    }, 2000);
+                } else {
+                    setTimeout(() => {
+                        window.location.href = rutaLocal;
+                    }, 2000);
+                }
             } else {
-                sweentAlert("top-end", "error", "Ocurrió un problema al registrar tu pedido", 1500);
+                console.error('Error en respuesta:', response);
+                sweentAlert("top-end", "error", response.message || "Ocurrió un problema al registrar tu pedido", 3000);
             }
             hideLoader();
         },
-        error: function (data, textStatus, jqXHR, error) {
-            console.log(data);
-            console.log(textStatus);
-            console.log(jqXHR);
-            console.log(error);
+        error: function (xhr, textStatus, error) {
+            console.error('Error AJAX:', {
+                xhr: xhr,
+                textStatus: textStatus,
+                error: error,
+                responseText: xhr.responseText
+            });
+            
+            let mensajeError = "Error al procesar tu pedido";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                mensajeError = xhr.responseJSON.message;
+            } else if (xhr.responseText) {
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    mensajeError = errorResponse.message || mensajeError;
+                } catch (e) {
+                    mensajeError = "Error de comunicación con el servidor";
+                }
+            }
+            
+            sweentAlert("top-end", "error", mensajeError, 4000);
             hideLoader();
         }
     });
@@ -226,15 +275,33 @@ function savePedido(nro_transaccion = null, descripcion_pago = null) {
 
 function cargarDatosCliente() {
     const clientemall = JSON.parse(localStorage.getItem('clientemall'));
-    $("#nombre-usuario").text(clientemall.user.name);
-    $("#nombre").val(clientemall.nombre);
-    $("#paterno").val(clientemall.paterno);
-    $("#telefono").val(clientemall.telefono);
-    $("#correo").val(clientemall.correo);
+    if (!clientemall) {
+        sweentAlert("top-end", "error", "No hay información de cliente. Inicia sesión.", 3000);
+        setTimeout(() => {
+            window.location.href = rutaLocal + "form";
+        }, 3000);
+        return;
+    }
+    
+    $("#nombre-usuario").text(clientemall.user ? clientemall.user.name : clientemall.nombre || "Cliente");
+    $("#nombre").val(clientemall.nombre || "");
+    $("#paterno").val(clientemall.paterno || "");
+    $("#telefono").val(clientemall.telefono || "");
+    $("#correo").val(clientemall.correo || "");
+    
+    console.log('Cliente cargado:', clientemall);
 }
 
 function cargarDetalleProducto() {
     const carritomall = JSON.parse(localStorage.getItem('carritomall'));
+    if (!carritomall || carritomall.length === 0) {
+        sweentAlert("top-end", "error", "No hay productos en el carrito", 2000);
+        setTimeout(() => {
+            window.location.href = rutaLocal;
+        }, 2000);
+        return;
+    }
+    
     const contenedor = $("#detalle-productos");
     const cabecera = `
         <div class="col-6"><strong>Producto</strong></div>
@@ -242,15 +309,17 @@ function cargarDetalleProducto() {
     `;
     contenedor.append(cabecera);
     total = 0;
+    
     carritomall.forEach(element => {
-        total += element.sub_monto;
+        total += parseFloat(element.sub_monto || 0);
         const cuerpo = `
-            <div class="col-6"><span>${element.nombre}</span></div>
-            <div class="col-2 text-center"><span> x${element.cantidad}</span></div>
-            <div class="col-4 text-right"><span>${element.sub_monto} Bs.</span></div>
+            <div class="col-6"><span>${element.nombre || 'Producto'}</span></div>
+            <div class="col-2 text-center"><span> x${element.cantidad || 1}</span></div>
+            <div class="col-4 text-right"><span>${element.sub_monto || 0} Bs.</span></div>
         `;
         contenedor.append(cuerpo);
     });
+    
     $("#total").text(total + " " + "Bs.");
     $("#price").text("$ " + montoDolar(total));
     
@@ -265,7 +334,7 @@ function montoTotal(array, descuentoCliente) {
     const descuento = descuentoCliente;
 
     array.forEach(element => {
-        monto += parseFloat(element.sub_monto);
+        monto += parseFloat(element.sub_monto || 0);
     });
 
     return {
@@ -280,7 +349,14 @@ function montoDolar(monto) {
 
 function castearCarrito(carrito) {
     carrito.forEach(element => {
-        element.id_menu = element.pivot.id_menu;
+        // Asegurar que tengan los campos necesarios
+        if (element.pivot) {
+            element.id_menu = element.pivot.id_menu;
+        }
+        // Valores por defecto si faltan
+        element.id_item_menu = element.id_item_menu || element.id;
+        element.cantidad = element.cantidad || 1;
+        element.sub_monto = element.sub_monto || 0;
     });
     return carrito;
 }
