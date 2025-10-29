@@ -24,9 +24,10 @@ class UserController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('usuarios'))) {
+        // Dar acceso si es Administrador o si tiene permiso 'usuarios'
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('usuarios')) {
             return redirect()->to('admin/rol-error');
-        };
+        }
         return view('pizzeria.user.index');
     }
 
