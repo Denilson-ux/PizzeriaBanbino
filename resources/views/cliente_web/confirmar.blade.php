@@ -116,8 +116,8 @@
 
 @section('clienteweb-js')
 
-    <!-- PayPal SDK CON CLIENT ID QUE SÍ FUNCIONA - SANDBOX -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AbQyHajdQyyBFypsin_o4lg0qn5juhzUapqEAFn-pKjKfabG1SjdAyKd4jk4-hvlZj_JdgAm_letmzNi&currency=USD&locale=es_ES&components=buttons"></script>
+    <!-- PayPal SDK - forzado sandbox con alias sb -->
+    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&components=buttons"></script>
 
     <!-- Maps -->
     <script async defer
