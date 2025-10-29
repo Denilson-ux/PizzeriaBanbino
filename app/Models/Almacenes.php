@@ -26,59 +26,52 @@ class Almacenes extends Model
         'updated_at' => 'datetime'
     ];
 
-    /**
-     * Relación con inventario (uno a muchos)
-     */
+    // Relaciones
     public function inventarios()
     {
         return $this->hasMany(InventarioAlmacen::class, 'id_almacen', 'id_almacen');
     }
 
-    /**
-     * Relación con compras (uno a muchos)
-     */
     public function compras()
     {
         return $this->hasMany(Compra::class, 'id_almacen_destino', 'id_almacen');
     }
 
-    /**
-     * Obtener inventario de un ingrediente específico
-     */
-    public function inventarioIngrediente($idIngrediente)
-    {
-        return $this->inventarios()->where('id_ingrediente', $idIngrediente)->first();
-    }
-
-    /**
-     * Obtener inventario con stock bajo
-     */
-    public function inventarioStockBajo()
-    {
-        return $this->inventarios()->stockBajo()->with('ingrediente');
-    }
-
-    /**
-     * Obtener inventario agotado
-     */
-    public function inventarioAgotado()
-    {
-        return $this->inventarios()->agotados()->with('ingrediente');
-    }
-
-    /**
-     * Scope para almacenes activos
-     */
+    // Scopes de estado
     public function scopeActivos($query)
     {
         return $query->where('estado', 'activo');
     }
 
-    /**
-     * Obtener valor total del inventario del almacén
-     */
+    public function scopeInactivos($query)
+    {
+        return $query->where('estado', 'inactivo');
+    }
+
+    // Atributos calculados
     public function getValorTotalInventarioAttribute()
     {
         return $this->inventarios->sum('valor_total_stock');
+    }
+
+    public function getTotalIngredientesAttribute()
+    {
+        return $this->inventarios()->count();
+    }
+
+    public function getProductosConStockAttribute()
+    {
+        return $this->inventarios()->where('stock_actual', '>', 0)->count();
+    }
+
+    public function getProductosStockBajoAttribute()
+    {
+        return $this->inventarios()->whereRaw('stock_actual <= stock_minimo')->count();
+    }
+
+    // Utilidades
+    public function tieneIngredientes(): bool
+    {
+        return $this->inventarios()->exists();
     }
 }
