@@ -51,6 +51,14 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('roles-spatie/{id}', [RolController::class, 'showRoleSpatie']);
     Route::get('permisos-spatie', [RolController::class, 'getPermisosSpatie']);
 
+    /* Asignación de Roles y Permisos */
+    Route::get('asignacion-roles-permisos', [AsignacionRolPermisoController::class, 'index'])->name('admin.asignacion-roles-permisos');
+    Route::get('api/users-roles', [AsignacionRolPermisoController::class, 'getUsersWithRoles'])->name('api.users-roles');
+    Route::post('asignar-rol', [AsignacionRolPermisoController::class, 'asignarRol'])->name('admin.asignar-rol');
+    Route::delete('remover-rol', [AsignacionRolPermisoController::class, 'removerRol'])->name('admin.remover-rol');
+    Route::post('asignar-permiso', [AsignacionRolPermisoController::class, 'asignarPermiso'])->name('admin.asignar-permiso');
+    Route::delete('remover-permiso', [AsignacionRolPermisoController::class, 'removerPermiso'])->name('admin.remover-permiso');
+
     Route::get('tipo-vehiculo', [TipoVehiculoController::class, 'getIndex']);
     Route::get('tipo-pago', [TipoPagoController::class, 'getIndex']);
     Route::get('vehiculo', [VehiculoController::class, 'getIndex']);
