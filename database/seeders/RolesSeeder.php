@@ -2,12 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-
 
 class RolesSeeder extends Seeder
 {
@@ -16,51 +13,33 @@ class RolesSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear roles
-        $rolAdmin = Role::create(['name' => 'Administrador']);
-        $rolCajero = Role::create(['name' => 'Cajero']);
-        $rolRepartidor = Role::create(['name' => 'Repartidor']);
-        $rolCliente = Role::create(['name' => 'Cliente']);
+        // Crear roles si no existen
+        $rolAdmin = Role::firstOrCreate(['name' => 'Administrador'], ['guard_name' => 'web']);
+        $rolCajero = Role::firstOrCreate(['name' => 'Cajero'], ['guard_name' => 'web']);
+        $rolRepartidor = Role::firstOrCreate(['name' => 'Repartidor'], ['guard_name' => 'web']);
+        $rolCliente = Role::firstOrCreate(['name' => 'Cliente'], ['guard_name' => 'web']);
 
-        // Crear permisos
-        $permisoVentas = Permission::create(['name' => 'ventas']);
-        $permisoPedidos = Permission::create(['name' => 'pedidos']);
-        $permisoMispedidos = Permission::create(['name' => 'mispedidos']);
-        $permisoItems = Permission::create(['name' => 'items']);
-        $permisoUsuarios = Permission::create(['name' => 'usuarios']);
-        $permisoVehiculos = Permission::create(['name' => 'vehiculos']);
-        $permisoCorreo = Permission::create(['name' => 'correo']);
+        // Mapear permisos según nueva estructura (no crear, solo obtener existentes)
+        $permisos = Permission::whereIn('name', [
+            'ventas', 'pedidos', 'compras', 'proveedores', 'almacenes', 'ingredientes',
+            'items_menu', 'personas', 'usuarios', 'vehiculos', 'restaurante'
+        ])->get()->keyBy('name');
 
-        // Asignar permisos a roles
-        $rolAdmin->givePermissionTo([$permisoVentas, 
-                                    $permisoPedidos, 
-                                    $permisoMispedidos, 
-                                    $permisoItems, 
-                                    $permisoUsuarios, 
-                                    $permisoVehiculos, 
-                                    $permisoCorreo
-                                ]);
+        // Asignaciones de ejemplo (ajusta según tus necesidades reales)
+        $rolAdmin->syncPermissions($permisos->values());
 
-        $rolCajero->givePermissionTo([$permisoVentas, 
-                                        $permisoPedidos, 
-                                        $permisoItems, 
-                                        $permisoVehiculos, 
-                                        $permisoCorreo
-                                    ]);
+        $rolCajero->syncPermissions([
+            $permisos['ventas'] ?? null,
+            $permisos['pedidos'] ?? null,
+            $permisos['usuarios'] ?? null,
+        ]);
 
-        $rolRepartidor->givePermissionTo([$permisoMispedidos, 
-                                        $permisoCorreo
-                                    ]);
+        $rolRepartidor->syncPermissions([
+            $permisos['pedidos'] ?? null,
+        ]);
 
-
-
-        // $role = Role::create(['name' => 'Administrador']);
-        // $permission = Permission::create(['name' => 'Venta2']);
-
-        // $permission->syncRoles($role);
-
-        // $user = User::find(1);
-
-        // $user->assignRole($role);
+        $rolCliente->syncPermissions([
+            // general sin permisos especiales del backoffice
+        ]);
     }
 }
