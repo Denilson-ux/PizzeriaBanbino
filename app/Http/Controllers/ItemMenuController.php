@@ -21,9 +21,10 @@ class ItemMenuController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('items'))) {
+        // Permitir Administrador o permiso correcto 'items_menu'
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
             return redirect()->to('admin/rol-error');
-        };
+        }
 
         return view('pizzeria.item_menu.index');
     }
@@ -31,7 +32,7 @@ class ItemMenuController extends Controller
     #API REST
     public function index()
     {
-        $data = ItemMenu::where('estado', 1)->with('tipoMenu')->with('menus'); //Acceder a la relación de uno a muchos con tipo menu
+        $data = ItemMenu::where('estado', 1)->with('tipoMenu')->with('menus');
         return new ItemMenuCollection($data->get());
     }
 
@@ -40,7 +41,6 @@ class ItemMenuController extends Controller
         $response = [];
 
         try {
-            // Inicia una transacción
             DB::beginTransaction();
             $itemMenu = ItemMenu::create([
                 'nombre' => $request->get('nombre'),
@@ -48,7 +48,6 @@ class ItemMenuController extends Controller
                 'descripcion' => $request->get('descripcion'),
                 'id_tipo_menu' => (int)($request->get('id_tipo_menu')),
             ]);
-
 
             $destinationPath = 'images/item_menu/';
             $nombre_campo = 'imagen';
@@ -62,8 +61,6 @@ class ItemMenuController extends Controller
                 'data' => $itemMenu,
             ];
         } catch (QueryException | ModelNotFoundException $e) {
-
-            // Deshace la transacción en caso de error
             DB::rollBack();
             $response = [
                 'message' => 'Error al insertar el registro.',
@@ -71,8 +68,6 @@ class ItemMenuController extends Controller
                 'error' => $e->getMessage(),
             ];
         } catch (\Exception $e) {
-
-            // Deshace la transacción en caso de error
             DB::rollBack();
             $response = [
                 'message' => 'Error general al insertar el registro.',
@@ -89,20 +84,17 @@ class ItemMenuController extends Controller
         return new ItemMenuResource($itemMenu);
     }
 
-
     public function update(UpdateItemMenuRequest $request, ItemMenu $itemMenu)
     {
         $response = [];
 
         try {
-
             if (!$itemMenu) {
                 $response = [
                     'message' => 'ItemMenu no encontrado.',
                     'status' => 404,
                 ];
             } else {
-
                 DB::beginTransaction();
 
                 $itemMenu->update([
@@ -112,8 +104,6 @@ class ItemMenuController extends Controller
                     'id_tipo_menu' => $request->get('id_tipo_menu'),
                 ]);
 
-
-                //Falta eliminar la imagen anterior
                 $destinationPath = 'images/item_menu/';
                 $nombre_campo = 'imagen';
                 $this->uploadImage($request, $itemMenu, $nombre_campo, $destinationPath);
@@ -149,7 +139,6 @@ class ItemMenuController extends Controller
     {
         $response = [];
         try {
-
             $itemMenu->update(['estado' => 0]);
             $response = [
                 'message' => 'Registro eliminado correctamente.',
@@ -174,29 +163,18 @@ class ItemMenuController extends Controller
 
     public function eliminados()
     {
-        $data = ItemMenu::where('estado', 0)->with('tipoMenu'); //Acceder a la relación de uno a muchos con tipo menu
+        $data = ItemMenu::where('estado', 0)->with('tipoMenu');
         return new ItemMenuCollection($data->get());
     }
 
     public function restaurar(ItemMenu $itemMenu)
     {
-        $response = [];
         try {
             $itemMenu->update(['estado' => 1]);
-
-            $response = [
-                'message' => 'Se restauró correctamente.',
-                'status' => 200,
-                'msg' => $itemMenu
-            ];
+            return response()->json(['message' => 'Se restauró correctamente.', 'status' => 200, 'msg' => $itemMenu]);
         } catch (\Exception $e) {
-            $response = [
-                'message' => 'La error al resturar.',
-                'status' => 500,
-                'error' => $e
-            ];
+            return response()->json(['message' => 'La error al resturar.', 'status' => 500, 'error' => $e]);
         }
-        return response()->json($response);
     }
 
     public function uploadImage($request, $data, $imagen, $destinationPath) 
@@ -208,7 +186,7 @@ class ItemMenuController extends Controller
 
             if ($uploadSuccess) {
                 $data->imagen = $destinationPath . $filename;
-                $data->save(); // Guardar los cambios en el modelo
+                $data->save();
             }
         }
     }
