@@ -1,21 +1,39 @@
-// Google Maps initialization script - Updated for latest API version
+// Google Maps initialization script - Fixed infinite loop issue
 // API Key: AIzaSyAtjzxI9iVgpXTkQ6kFJ33RA5oGngdS6d0
-// Make sure Places API is enabled in Google Cloud Console
+
+// Global flag to prevent multiple initializations
+window.googleMapsApiLoaded = false;
 
 // Global callback function for Google Maps API
 function initMap() {
+    if (window.googleMapsApiLoaded) {
+        console.log('Google Maps API already initialized, skipping...');
+        return;
+    }
+    
     console.log('Google Maps API loaded successfully');
+    window.googleMapsApiLoaded = true;
+    
     // Trigger custom event to notify that Maps API is ready
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('googleMapsLoaded'));
     }
 }
 
-// Load Google Maps API with the updated API key - simplified version
+// Load Google Maps API - simplified version without conflicts
 function loadGoogleMapsAPI() {
     // Check if API is already loaded
     if (typeof google !== 'undefined' && google.maps) {
         console.log('Google Maps API already loaded');
+        if (!window.googleMapsApiLoaded) {
+            initMap();
+        }
+        return;
+    }
+    
+    // Check if script is already being loaded
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+        console.log('Google Maps script already loading...');
         return;
     }
     
