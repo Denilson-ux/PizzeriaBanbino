@@ -21,10 +21,11 @@ class RepartidorController extends Controller
      {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('items'))) {
+        // Permitir rol Administrador o permiso 'repartidores'
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('repartidores')) {
             return redirect()->to('admin/rol-error');
-        };
-         return view('pizzeria.repartidor.index');
+        }
+        return view('pizzeria.repartidor.index');
      }
  
      #API REST
@@ -40,12 +41,10 @@ class RepartidorController extends Controller
             $repartidoresPersona[$i]['estado'] = $repartidor['estado'];
             $repartidoresPersona[$i]['created_at'] = $repartidor['created_at'];
             $repartidoresPersona[$i]['updated_at'] = $repartidor['updated_at'];
-            // $repartidoresPersona[$i]['repartidor'] = Repartidor::findOrFail($repartidor['id_repartidor']);
             $repartidoresPersona[$i]['persona'] = Persona::findOrFail($repartidor['id_repartidor']);
             $i++;
          }
  
-         // Para que retorne los datos y se vea mas pro :v                        
          $data = [
              'data' => $repartidoresPersona
          ];
