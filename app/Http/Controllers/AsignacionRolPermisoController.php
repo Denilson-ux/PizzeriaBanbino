@@ -20,13 +20,15 @@ class AsignacionRolPermisoController extends Controller
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
         
-        if (!($user->hasPermissionTo('usuarios') || $user->hasPermissionTo('Asignacion Roles y Permisos'))) {
+        // Acceso: si es Administrador (rol) o tiene permiso 'usuarios' permite el acceso.
+        // Se elimina el permiso inexistente 'Asignacion Roles y Permisos' y se usa el nuevo esquema.
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('usuarios')) {
             return redirect()->to('admin/rol-error');
         }
         
         $users = User::with(['roles', 'permissions'])->where('estado', 1)->get();
-        $roles = Role::all(); // Usar roles de Spatie
-        $permissions = Permission::all(); // Usar permisos de Spatie
+        $roles = Role::all();
+        $permissions = Permission::all();
         
         return view('admin.asignacion-roles-permisos.index', compact('users', 'roles', 'permissions'));
     }
@@ -37,7 +39,7 @@ class AsignacionRolPermisoController extends Controller
     public function create()
     {
         $users = User::where('estado', 1)->get();
-        $roles = Role::with('permissions')->get(); // Cargar roles con permisos
+        $roles = Role::with('permissions')->get();
         $permissions = Permission::all();
         
         return view('admin.asignacion-roles-permisos.create', compact('users', 'roles', 'permissions'));
@@ -46,7 +48,7 @@ class AsignacionRolPermisoController extends Controller
     /**
      * Store a newly created user assignment.
      */
-    public function store(Request $request)
+    public function store(\Illuminate\Http\Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -61,19 +63,11 @@ class AsignacionRolPermisoController extends Controller
 
             $user = User::findOrFail($request->user_id);
             
-            // Asignar roles (esto dará automáticamente los permisos del rol)
-            if ($request->has('roles') && is_array($request->roles)) {
-                $user->syncRoles($request->roles);
-            } else {
-                $user->syncRoles([]);
-            }
+            // Asignar roles
+            $user->syncRoles($request->roles ?? []);
             
-            // Asignar permisos directos adicionales (opcionales)
-            if ($request->has('permissions') && is_array($request->permissions)) {
-                $user->syncPermissions($request->permissions);
-            } else {
-                $user->syncPermissions([]);
-            }
+            // Asignar permisos directos
+            $user->syncPermissions($request->permissions ?? []);
 
             DB::commit();
 
@@ -92,14 +86,9 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Display the specified user assignment.
-     */
     public function show($userId)
     {
         $user = User::with(['roles', 'permissions', 'persona'])->findOrFail($userId);
-        
-        // Obtener permisos efectivos (por rol + directos)
         $allPermissions = $user->getAllPermissions();
         $directPermissions = $user->getDirectPermissions();
         $rolePermissions = $allPermissions->diff($directPermissions);
@@ -107,9 +96,6 @@ class AsignacionRolPermisoController extends Controller
         return view('admin.asignacion-roles-permisos.show', compact('user', 'allPermissions', 'directPermissions', 'rolePermissions'));
     }
 
-    /**
-     * Show the form for editing the specified user assignment.
-     */
     public function edit($userId)
     {
         $user = User::with(['roles', 'permissions'])->findOrFail($userId);
@@ -119,10 +105,7 @@ class AsignacionRolPermisoController extends Controller
         return view('admin.asignacion-roles-permisos.edit', compact('user', 'roles', 'permissions'));
     }
 
-    /**
-     * Update the specified user assignment.
-     */
-    public function update(Request $request, $userId)
+    public function update(\Illuminate\Http\Request $request, $userId)
     {
         $request->validate([
             'roles' => 'nullable|array',
@@ -135,24 +118,12 @@ class AsignacionRolPermisoController extends Controller
             DB::beginTransaction();
 
             $user = User::findOrFail($userId);
-            
-            // Sincronizar roles
-            if ($request->has('roles') && is_array($request->roles)) {
-                $user->syncRoles($request->roles);
-            } else {
-                $user->syncRoles([]);
-            }
-            
-            // Sincronizar permisos directos
-            if ($request->has('permissions') && is_array($request->permissions)) {
-                $user->syncPermissions($request->permissions);
-            } else {
-                $user->syncPermissions([]);
-            }
+            $user->syncRoles($request->roles ?? []);
+            $user->syncPermissions($request->permissions ?? []);
 
             DB::commit();
 
-            return redirect()->route('asignacion-roles-permisos.index')
+            return redirect()->route('admin.asignacion-roles-permisos')
                            ->with('success', 'Asignaciones actualizadas correctamente.');
 
         } catch (\Exception $e) {
@@ -161,19 +132,14 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Remove the specified user assignment.
-     */
     public function destroy($userId)
     {
         try {
             $user = User::findOrFail($userId);
-            
-            // Remover todos los roles y permisos del usuario
             $user->syncRoles([]);
             $user->syncPermissions([]);
 
-            return redirect()->route('asignacion-roles-permisos.index')
+            return redirect()->route('admin.asignacion-roles-permisos')
                            ->with('success', 'Todas las asignaciones han sido removidas del usuario.');
 
         } catch (\Exception $e) {
@@ -181,9 +147,6 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Get role permissions for AJAX requests.
-     */
     public function getRolePermissions($roleId)
     {
         try {
@@ -201,9 +164,6 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Get all available roles for AJAX.
-     */
     public function getRolesSpatie()
     {
         try {
@@ -227,9 +187,6 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Get all available permissions for AJAX.
-     */
     public function getPermisosSpatie()
     {
         try {
@@ -247,10 +204,7 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Assign a single role to user via AJAX.
-     */
-    public function assignRole(Request $request)
+    public function assignRole(\Illuminate\Http\Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -273,10 +227,7 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Remove a single role from user via AJAX.
-     */
-    public function removeRole(Request $request)
+    public function removeRole(\Illuminate\Http\Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -299,10 +250,7 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Assign a single permission to user via AJAX.
-     */
-    public function assignPermission(Request $request)
+    public function assignPermission(\Illuminate\Http\Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -325,10 +273,7 @@ class AsignacionRolPermisoController extends Controller
         }
     }
 
-    /**
-     * Remove a single permission from user via AJAX.
-     */
-    public function removePermission(Request $request)
+    public function removePermission(\Illuminate\Http\Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
