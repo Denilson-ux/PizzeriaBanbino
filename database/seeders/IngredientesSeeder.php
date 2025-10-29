@@ -154,18 +154,30 @@ class IngredientesSeeder extends Seeder
             ]
         ];
         
-        // Obtener el ID del almacén principal creado por la migración de reestructura
-        $almacenPrincipalId = DB::table('almacenes_fisicos')
+        // Obtener el ID del almacén principal - probar primero 'almacenes_fisicos' y fallback a 'almacenes'
+        $almacenPrincipalId = DB::table('information_schema.tables')
+            ->where('TABLE_SCHEMA', DB::getDatabaseName())
+            ->whereIn('TABLE_NAME', ['almacenes_fisicos', 'almacenes'])
+            ->orderByRaw("FIELD(TABLE_NAME,'almacenes_fisicos','almacenes')")
+            ->first();
+
+        if (!$almacenPrincipalId) {
+            $this->command->error('No se encontró la tabla de almacenes (ni almacenes_fisicos ni almacenes). Ejecute migraciones.');
+            return;
+        }
+
+        $tablaAlmacenes = $almacenPrincipalId->TABLE_NAME;
+        
+        $almacenId = DB::table($tablaAlmacenes)
             ->where('nombre', 'Almacén Principal')
             ->value('id_almacen');
         
-        if (!$almacenPrincipalId) {
-            $this->command->error('No se encontró el Almacén Principal. Ejecute primero las migraciones.');
+        if (!$almacenId) {
+            $this->command->error("No se encontró el 'Almacén Principal' en la tabla {$tablaAlmacenes}.");
             return;
         }
         
         foreach ($ingredientes as $data) {
-            // Separar datos de ingrediente y almacén
             $ingredienteData = [
                 'nombre' => $data['nombre'],
                 'descripcion' => $data['descripcion'],
@@ -177,7 +189,7 @@ class IngredientesSeeder extends Seeder
             ];
             
             $inventarioData = [
-                'id_almacen' => $almacenPrincipalId,
+                'id_almacen' => $almacenId,
                 'stock_actual' => $data['stock_inicial'],
                 'stock_minimo' => $data['stock_minimo'],
                 'stock_maximo' => $data['stock_maximo'],
