@@ -72,13 +72,13 @@
                         <div class="form-check mx-2">
                             <input class="form-check-input" type="radio"  name="flexRadioDefault" id="pago-efectivo" checked>
                             <label class="form-check-label" for="flexRadioDefault2">
-                              Efectivo
+                              💰 Efectivo (contra entrega)
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="flexRadioDefault" id="pago-paypal">
                             <label class="form-check-label" for="flexRadioDefault2">
-                                Paypal
+                                💳 PayPal
                             </label>
                         </div>
                     </div>
@@ -116,7 +116,8 @@
 
 @section('clienteweb-js')
 
-    <script src="https://www.paypal.com/sdk/js?client-id=AVpuY0jR5A-wyJxSOpV6so4LyCtk_meUEt10lreqz0V4UK69Gc0v08mB5SMer_L3nWyT_pP3ErLRrUpV&components=buttons&currency=USD"></script>
+    <!-- PayPal SDK CON TU CLIENT ID REAL - SANDBOX -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AX6TnbqufMrXgzGVHsPMQcvU-dXckOwEStdLVnvL-Mcas7jsiZd8EfVn8oqkIYiHJL5qbUn8YWYCVRh4J&currency=USD&locale=es_ES&components=buttons"></script>
 
     <!-- Maps -->
     <script async defer
