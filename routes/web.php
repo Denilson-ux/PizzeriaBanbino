@@ -53,11 +53,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     /* Asignación de Roles y Permisos */
     Route::get('asignacion-roles-permisos', [AsignacionRolPermisoController::class, 'index'])->name('admin.asignacion-roles-permisos');
-    Route::get('api/users-roles', [AsignacionRolPermisoController::class, 'getUsersWithRoles'])->name('api.users-roles');
-    Route::post('asignar-rol', [AsignacionRolPermisoController::class, 'asignarRol'])->name('admin.asignar-rol');
-    Route::delete('remover-rol', [AsignacionRolPermisoController::class, 'removerRol'])->name('admin.remover-rol');
-    Route::post('asignar-permiso', [AsignacionRolPermisoController::class, 'asignarPermiso'])->name('admin.asignar-permiso');
-    Route::delete('remover-permiso', [AsignacionRolPermisoController::class, 'removerPermiso'])->name('admin.remover-permiso');
+    // API internas para el modal (JSON)
+    Route::get('asignacion-roles-permisos/roles', [AsignacionRolPermisoController::class, 'getRolesSpatie']);
+    Route::get('asignacion-roles-permisos/permisos', [AsignacionRolPermisoController::class, 'getPermisosSpatie']);
+    // Acciones
+    Route::post('asignacion-roles-permisos/assign', [AsignacionRolPermisoController::class, 'store'])->name('asignacion-roles-permisos.store');
+    Route::put('asignacion-roles-permisos/{userId}', [AsignacionRolPermisoController::class, 'update'])->name('asignacion-roles-permisos.update');
 
     Route::get('tipo-vehiculo', [TipoVehiculoController::class, 'getIndex']);
     Route::get('tipo-pago', [TipoPagoController::class, 'getIndex']);
@@ -97,8 +98,6 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::resource('almacenes', AlmacenesController::class);
     Route::get('almacenes/{id}/inventario', [AlmacenesController::class, 'inventario'])->name('almacenes.inventario');
     Route::get('almacenes/{id}/movimientos', [AlmacenesController::class, 'movimientos'])->name('almacenes.movimientos');
-    // Se elimina la ruta de stock-bajo global por solicitud
-    // Route::get('almacenes/{id}/stock-bajo', [AlmacenesController::class, 'stockBajo'])->name('almacenes.stock_bajo');
     Route::post('almacenes/{id}/ajustar-stock', [AlmacenesController::class, 'ajustarStock'])->name('almacenes.ajustar_stock');
     Route::get('api/almacenes/activos', [AlmacenesController::class, 'getAlmacenesActivos'])->name('almacenes.activos');
 
