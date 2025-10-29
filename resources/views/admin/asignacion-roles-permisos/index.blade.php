@@ -192,7 +192,7 @@ $('#assignForm').on('submit', function(e){
   $('#assign_user_id').val(uid);
   const formData = new FormData(this);
   $.ajax({
-    url: '/admin/asignacion-roles-permisos',
+    url: '/admin/asignacion-roles-permisos/assign', // corregido a la ruta POST válida
     type: 'POST',
     data: formData,
     processData: false,
@@ -204,7 +204,6 @@ $('#assignForm').on('submit', function(e){
 });
 function removeAllAssignments(userId, name){
   if(!confirm(`¿Remover TODAS las asignaciones de "${name}"?`)) return;
-  // Enviar como POST con _method=DELETE para máxima compatibilidad
   const formData = new FormData();
   formData.append('_method','DELETE');
   formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
