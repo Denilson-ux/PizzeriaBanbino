@@ -47,7 +47,7 @@
         <div class="col-lg-3 col-6">
             <div class="small-box bg-primary">
                 <div class="inner">
-                    <h3>S/. {{ number_format($estadisticas['total_monto'], 0) }}</h3>
+                    <h3>Bs {{ number_format($estadisticas['total_monto'], 0) }}</h3>
                     <p>Monto Total</p>
                 </div>
                 <div class="icon">
@@ -175,7 +175,7 @@
                                         <br><small class="text-muted">{{ $compra->detalles->sum('cantidad') }} unidades total</small>
                                     </td>
                                     <td>
-                                        <strong>S/. {{ number_format($compra->total, 2) }}</strong>
+                                        <strong>Bs {{ number_format($compra->total, 2) }}</strong>
                                         @if($compra->tipo_compra == 'credito')
                                             <br><small class="badge badge-warning">Crédito</small>
                                         @endif
