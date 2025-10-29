@@ -21,9 +21,10 @@ class ClienteController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('items'))) {
-            return redirect()->to('admin/admin/rol-error');
-        };
+        // Permitir rol Administrador o permiso 'clientes'
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('clientes')) {
+            return redirect()->to('admin/rol-error');
+        }
         return view('pizzeria.cliente.index');
     }
 
