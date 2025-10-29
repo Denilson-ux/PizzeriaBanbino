@@ -10,18 +10,18 @@ $(document).ready(function () {
     
     // Wait for Google Maps to load before initializing map
     if (typeof google !== 'undefined' && google.maps) {
-        initMap();
+        initMapConfirmar();
     } else {
         // Listen for Google Maps API load event
         window.addEventListener('googleMapsLoaded', () => {
-            initMap();
+            initMapConfirmar();
         });
         // Fallback: check periodically if Google Maps is loaded
         const checkGoogleMaps = setInterval(() => {
             if (typeof google !== 'undefined' && google.maps) {
                 clearInterval(checkGoogleMaps);
                 if (!googleMapsLoaded) {
-                    initMap();
+                    initMapConfirmar();
                 }
             }
         }, 100);
@@ -190,11 +190,16 @@ $("input[type='radio']").change(function () {
     }
 });
 
-/// GOOGLE MAPS - Updated for latest API
-function initMap() {
+/// GOOGLE MAPS - Renamed to avoid conflicts
+function initMapConfirmar() {
     if (typeof google === 'undefined' || !google.maps) {
         console.error('Google Maps API not available');
         showMapError();
+        return;
+    }
+
+    if (googleMapsLoaded) {
+        console.log('Map already initialized, skipping...');
         return;
     }
 
@@ -209,25 +214,24 @@ function initMap() {
             return;
         }
 
-        // Initialize map with updated configuration
+        // Initialize map with simple configuration
         const mapOptions = {
             center: myLatLng,
             zoom: 13,
             streetViewControl: false,
             mapTypeControl: true,
             fullscreenControl: true,
-            zoomControl: true,
-            mapId: null // Using default map styling
+            zoomControl: true
         };
         
         map = new google.maps.Map(mapContainer, mapOptions);
         
-        // Create marker with updated API
-        marker = new google.maps.marker.AdvancedMarkerElement({
+        // Use legacy marker to avoid compatibility issues
+        marker = new google.maps.Marker({
             position: myLatLng,
             map: map,
-            title: 'Arrastra para cambiar ubicación',
-            gmpDraggable: true
+            draggable: true,
+            title: 'Arrastra para cambiar ubicación'
         });
 
         // Add event listeners
@@ -241,44 +245,7 @@ function initMap() {
     } catch (error) {
         console.error('Error initializing map:', error);
         showMapError();
-        // Fallback to legacy marker if AdvancedMarkerElement fails
-        try {
-            initMapWithLegacyMarker();
-        } catch (fallbackError) {
-            console.error('Fallback initialization also failed:', fallbackError);
-        }
     }
-}
-
-// Fallback function using legacy marker
-function initMapWithLegacyMarker() {
-    const latitud = -17.7962;
-    const longitud = -63.1814;
-    const myLatLng = { lat: latitud, lng: longitud };
-    
-    const mapContainer = document.getElementById('map');
-    const mapOptions = {
-        center: myLatLng,
-        zoom: 13,
-        streetViewControl: false,
-        mapTypeControl: true,
-        fullscreenControl: true,
-    };
-    
-    map = new google.maps.Map(mapContainer, mapOptions);
-    marker = new google.maps.Marker({
-        position: myLatLng,
-        map: map,
-        draggable: true,
-        title: 'Arrastra para cambiar ubicación',
-    });
-
-    markerListenerDragend(marker);
-    mapListenerClick(map, marker);
-    initAutoComplete(map, marker);
-    
-    googleMapsLoaded = true;
-    console.log('Map initialized with legacy marker');
 }
 
 function showMapError() {
@@ -301,13 +268,7 @@ function mapListenerClick(map, marker) {
             const clickedLat = event.latLng.lat();
             const clickedLng = event.latLng.lng();
 
-            // Handle both AdvancedMarkerElement and legacy Marker
-            if (marker.position) {
-                marker.position = event.latLng;
-            } else {
-                marker.setPosition(event.latLng);
-            }
-            
+            marker.setPosition(event.latLng);
             $("#latitud").val(clickedLat);
             $("#longitud").val(clickedLng);
             localizacionInversa(event);
@@ -318,21 +279,9 @@ function mapListenerClick(map, marker) {
 }
 
 function markerListenerDragend(marker) {
-    // Handle both AdvancedMarkerElement and legacy Marker events
-    const eventType = marker.gmpDraggable ? 'gmp-dragend' : 'dragend';
-    
-    marker.addListener(eventType, function(event) {
+    marker.addListener('dragend', function(event) {
         try {
-            let position;
-            if (marker.position && typeof marker.position.lat === 'function') {
-                position = marker.position;
-            } else if (this.getPosition) {
-                position = this.getPosition();
-            } else {
-                console.error('Unable to get marker position');
-                return;
-            }
-
+            const position = this.getPosition();
             const latitud = position.lat();
             const longitud = position.lng();
 
@@ -386,13 +335,7 @@ function initAutoComplete(map, marker) {
                 if (place.geometry && place.geometry.location) {
                     const location = place.geometry.location;
                     map.setCenter(location);
-                    
-                    // Handle both marker types
-                    if (marker.position) {
-                        marker.position = location;
-                    } else {
-                        marker.setPosition(location);
-                    }
+                    marker.setPosition(location);
                     
                     $("#latitud").val(location.lat());
                     $("#longitud").val(location.lng());
@@ -489,14 +432,7 @@ function ubicacionActualReady() {
                 $("#longitud").val(posicion.lng);
                 
                 map.setCenter(posicion);
-                
-                // Handle both marker types
-                if (marker.position) {
-                    marker.position = latLng;
-                } else {
-                    marker.setPosition(posicion);
-                }
-                
+                marker.setPosition(posicion);
                 map.setZoom(15);
                 
                 console.log('Ubicación obtenida correctamente:', posicion);
