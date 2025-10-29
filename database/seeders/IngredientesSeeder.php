@@ -155,7 +155,7 @@ class IngredientesSeeder extends Seeder
         ];
         
         // Obtener el ID del almacén principal creado por la migración de reestructura
-        $almacenPrincipalId = DB::table('almacenes')
+        $almacenPrincipalId = DB::table('almacenes_fisicos')
             ->where('nombre', 'Almacén Principal')
             ->value('id_almacen');
         
