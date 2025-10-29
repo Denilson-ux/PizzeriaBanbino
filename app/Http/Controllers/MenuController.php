@@ -22,9 +22,9 @@ class MenuController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('items'))) {
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
             return redirect()->to('admin/rol-error');
-        };
+        }
 
         return view('pizzeria.menu.index');
     }
@@ -33,9 +33,9 @@ class MenuController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('items'))) {
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
             return redirect()->to('admin/rol-error');
-        };
+        }
 
         return view('pizzeria.menu.create');
     }
@@ -43,9 +43,9 @@ class MenuController extends Controller
     {
         $usuarioAutenticado = Auth::user();
         $user = User::findOrFail($usuarioAutenticado->id);
-        if (!($user->hasPermissionTo('items'))) {
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
             return redirect()->to('admin/rol-error');
-        };
+        }
 
         return view('pizzeria.menu.edit');
     }
@@ -105,7 +105,6 @@ class MenuController extends Controller
             ];
         }
 
-        // Laravel manejará automáticamente la conversión a JSON
         return $response;
     }
 
@@ -172,7 +171,6 @@ class MenuController extends Controller
             ];
         }
 
-        // Laravel manejará automáticamente la conversión a JSON
         return $response;
     }
 
