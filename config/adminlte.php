@@ -112,14 +112,14 @@ return [
             ]
         ],
 
-        ['header' => 'Items menú'],
+        ['header' => 'Producto menú'],
         [
-            'text' => 'Menú e item',
+            'text' => 'Menú e Producto',
             'icon' => 'fas fa-fw fa-utensils',
             'submenu' => [
-                [ 'text' => 'Catálogo menú','url' => 'admin/menu','icon' => 'fas fa-fw fa-book','can' => ['items_menu','role:Administrador'] ],
-                [ 'text' => 'Item menú','url' => 'admin/item-menu','icon' => 'fas fa-fw fa-utensil-spoon','can' => ['items_menu','role:Administrador'] ],
-                [ 'text' => 'Tipo item menú','url' => 'admin/tipo-menu','icon' => 'fas fa-fw fa-hamburger','can' => ['items_menu','role:Administrador'] ],
+                [ 'text' => 'Menú','url' => 'admin/menu','icon' => 'fas fa-fw fa-book','can' => ['items_menu','role:Administrador'] ],
+                [ 'text' => 'Producto','url' => 'admin/item-menu','icon' => 'fas fa-fw fa-hamburger','can' => ['items_menu','role:Administrador'] ],
+                [ 'text' => 'Tipo','url' => 'admin/tipo-menu','icon' => 'fas fa-fw fa-hamburger','can' => ['items_menu','role:Administrador'] ],
             ]
         ],
 
