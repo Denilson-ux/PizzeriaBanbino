@@ -253,4 +253,42 @@ class CompraController extends Controller
         $almacenes = Almacenes::activos()->select('id_almacen', 'nombre', 'ubicacion', 'responsable')->orderBy('nombre')->get();
         return response()->json($almacenes);
     }
+
+    /**
+     * Obtener stock de ingredientes por almacén específico
+     */
+    public function getStockPorAlmacen(Request $request)
+    {
+        $request->validate([
+            'id_almacen' => 'required|exists:almacenes_fisicos,id_almacen',
+            'id_ingrediente' => 'nullable|exists:ingredientes,id_ingrediente'
+        ]);
+
+        $query = InventarioAlmacen::with(['ingrediente', 'almacen'])
+            ->where('id_almacen', $request->id_almacen)
+            ->where('estado', 'activo');
+
+        // Si se especifica un ingrediente específico
+        if ($request->filled('id_ingrediente')) {
+            $query->where('id_ingrediente', $request->id_ingrediente);
+        }
+
+        $inventario = $query->get()->map(function($item) {
+            return [
+                'id_ingrediente' => $item->id_ingrediente,
+                'nombre_ingrediente' => $item->ingrediente->nombre,
+                'categoria' => $item->ingrediente->categoria ?? 'Otros',
+                'stock_actual' => $item->stock_actual,
+                'stock_minimo' => $item->stock_minimo,
+                'stock_maximo' => $item->stock_maximo,
+                'unidad_medida' => $item->unidad_medida,
+                'estado_stock' => $item->estado_stock,
+                'stock_bajo' => $item->stock_bajo,
+                'valor_total' => $item->valor_total_stock,
+                'costo_unitario' => $item->costo_unitario_promedio
+            ];
+        });
+
+        return response()->json($inventario);
+    }
 }
