@@ -4,6 +4,8 @@ let metodoPago = 1; //efectivo
 let total = 0;
 let googleMapsLoaded = false;
 let paypalInitialized = false;
+let paypalRetries = 0;
+const MAX_PAYPAL_RETRIES = 5;
 
 $(document).ready(function () {
     cargarDatosCliente();
@@ -35,36 +37,42 @@ $(document).ready(function () {
     $("#nav-carrito-search").addClass("d-none");
 });
 
-// PayPal Initialization Function
+// Enhanced PayPal Initialization with retries
 function initPayPalButtons() {
-    // Wait a bit for PayPal SDK to load
-    setTimeout(() => {
-        if (typeof paypal !== 'undefined' && paypal.Buttons) {
-            if (!paypalInitialized) {
-                renderPayPalButtons();
-                paypalInitialized = true;
-                console.log('PayPal inicializado correctamente');
-            }
-        } else {
-            console.warn('PayPal SDK aún no está disponible, reintentando...');
-            // Try again after more time
-            setTimeout(() => {
-                if (typeof paypal !== 'undefined' && paypal.Buttons && !paypalInitialized) {
-                    renderPayPalButtons();
-                    paypalInitialized = true;
-                    console.log('PayPal inicializado correctamente (segundo intento)');
-                } else if (!paypalInitialized) {
-                    console.error('PayPal SDK no se pudo cargar');
-                    showPayPalError();
-                }
-            }, 2000);
+    console.log(`Intentando inicializar PayPal (intento ${paypalRetries + 1}/${MAX_PAYPAL_RETRIES})`);
+    
+    if (paypalRetries >= MAX_PAYPAL_RETRIES) {
+        console.error('PayPal SDK no se pudo cargar después de múltiples intentos');
+        showPayPalError();
+        return;
+    }
+    
+    // Check if PayPal SDK is loaded
+    if (typeof paypal !== 'undefined' && paypal.Buttons) {
+        if (!paypalInitialized) {
+            console.log('✅ PayPal SDK detectado, inicializando botones...');
+            renderPayPalButtons();
+            paypalInitialized = true;
+            return;
         }
-    }, 1000);
+    }
+    
+    // PayPal not ready, increment retry counter and try again
+    paypalRetries++;
+    const retryDelay = Math.min(1000 * paypalRetries, 5000); // Progressive delay, max 5s
+    
+    console.warn(`⏳ PayPal SDK no disponible, reintentando en ${retryDelay}ms...`);
+    
+    setTimeout(() => {
+        initPayPalButtons();
+    }, retryDelay);
 }
 
-// Render PayPal Buttons
+// Render PayPal Buttons with enhanced error handling
 function renderPayPalButtons() {
     try {
+        console.log('🔄 Renderizando botones de PayPal...');
+        
         paypal.Buttons({
             style: {
                 layout: 'vertical',
@@ -73,11 +81,11 @@ function renderPayPalButtons() {
                 label: 'pay',
                 height: 45
             },
+            
             createOrder: function(data, actions) {
-                // Convertir bolivianos a dólares usando la función montoDolar
                 const montoDolares = montoDolar(total);
                 
-                console.log('Creando orden PayPal:', {
+                console.log('💰 Creando orden PayPal:', {
                     bolivianos: total,
                     dolares: montoDolares
                 });
@@ -93,16 +101,16 @@ function renderPayPalButtons() {
                     }]
                 });
             },
+            
             onApprove: function(data, actions) {
-                console.log('PayPal onApprove triggered:', data);
+                console.log('✅ PayPal onApprove triggered:', data);
                 
                 return actions.order.capture().then(function(details) {
-                    console.log('¡Pago completado con PayPal!', details);
+                    console.log('🎉 ¡Pago completado con PayPal!', details);
                     
                     if (details.status === "COMPLETED") {
-                        // El dinero llega a tu cuenta denilsonquichu@gmail.com
                         const clienteInfo = `${details.payer.name.given_name} ${details.payer.name.surname}`;
-                        const descripcionPago = `PayPal - ${clienteInfo} (${details.payer.email_address})`;
+                        const descripcionPago = `PayPal LIVE - ${clienteInfo} (${details.payer.email_address})`;
                         
                         sweentAlert("top-end", "success", `¡Pago completado! Recibido de ${details.payer.name.given_name}`, 3000);
                         
@@ -112,40 +120,48 @@ function renderPayPalButtons() {
                         sweentAlert("top-end", "warning", "El pago está siendo procesado...", 2000);
                     }
                 }).catch(function(error) {
-                    console.error('Error capturando el pago:', error);
+                    console.error('❌ Error capturando el pago:', error);
                     sweentAlert("top-end", "error", "Error al completar el pago. Intenta nuevamente.", 3000);
                 });
             },
+            
             onCancel: function(data) {
-                console.log('Pago cancelado por el usuario:', data);
+                console.log('⚠️ Pago cancelado por el usuario:', data);
                 sweentAlert("top-end", "warning", "Pago cancelado por el usuario", 2000);
             },
+            
             onError: function(err) {
-                console.error('Error en PayPal:', err);
+                console.error('❌ Error en PayPal:', err);
                 sweentAlert("top-end", "error", "Error al procesar el pago. Por favor intenta de nuevo.", 3000);
             }
+            
         }).render('#paypal-button-container').then(() => {
-            console.log('PayPal buttons rendered successfully');
-            // Hide error message if it exists
-            const errorElement = document.querySelector('#paypal-error-message');
-            if (errorElement) {
-                errorElement.style.display = 'none';
-            }
+            console.log('✅ PayPal buttons rendered successfully');
         }).catch((error) => {
-            console.error('Error rendering PayPal buttons:', error);
+            console.error('❌ Error rendering PayPal buttons:', error);
             showPayPalError();
         });
+        
     } catch (error) {
-        console.error('Error inicializando PayPal:', error);
+        console.error('❌ Error inicializando PayPal:', error);
         showPayPalError();
     }
 }
 
-// Show PayPal Error
+// Enhanced PayPal Error Display
 function showPayPalError() {
     const paypalContainer = document.getElementById('paypal-button-container');
     if (paypalContainer) {
-        paypalContainer.innerHTML = '<p id="paypal-error-message" class="text-danger"><i class="fas fa-exclamation-triangle"></i> PayPal no está disponible. Intenta recargar la página.</p>';
+        paypalContainer.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>PayPal no disponible</strong><br>
+                <small>Verifica tu conexión a internet e intenta recargar la página.</small><br>
+                <button onclick="window.location.reload()" class="btn btn-sm btn-outline-danger mt-2">
+                    <i class="fas fa-redo"></i> Recargar página
+                </button>
+            </div>
+        `;
     }
 }
 
@@ -197,7 +213,7 @@ function savePedido(nro_transaccion = null, descripcion_pago = null) {
     data.monto = parseFloat(montos.monto);
     data.fecha = obtenerFechaActual();
     data.id_repartidor = null;
-    data.id_cliente = parseInt(clienteMall.id_cliente); // Asegurar que sea entero
+    data.id_cliente = parseInt(clienteMall.id_cliente);
     data.id_tipo_pago = metodoPago; 
     data.estado_pedido = "Pendiente";
     data.nro_transaccion = nro_transaccion;
@@ -207,9 +223,7 @@ function savePedido(nro_transaccion = null, descripcion_pago = null) {
     data.referencia = $("#direccion").val() || "Dirección no especificada";
     data.items_menu = carritomall;
     
-    // Log para debugging
-    console.log('Datos del pedido a enviar:', data);
-    console.log('Cliente info:', clienteMall);
+    console.log('📦 Datos del pedido a enviar:', data);
     
     const datosEnviar = JSON.stringify(data);
     const url = rutaApiRest + "pedido";
@@ -225,13 +239,13 @@ function savePedido(nro_transaccion = null, descripcion_pago = null) {
             'Accept': 'application/json'
         },
         success: function (response) {
-            console.log('Respuesta del servidor:', response);
+            console.log('✅ Respuesta del servidor:', response);
             const status = response.status;
             if (status == 200) {
                 const data = response.data;
                 sweentAlert("top-end", "success", "Pedido realizado correctamente", 1500);
                 localStorage.removeItem('carritomall');
-                // Redirigir al detalle del pedido si existe la ruta
+                
                 if (data && data.id_pedido) {
                     setTimeout(() => {
                         window.location.href = rutaLocal + "detalle/" + data.id_pedido;
@@ -242,13 +256,13 @@ function savePedido(nro_transaccion = null, descripcion_pago = null) {
                     }, 2000);
                 }
             } else {
-                console.error('Error en respuesta:', response);
+                console.error('❌ Error en respuesta:', response);
                 sweentAlert("top-end", "error", response.message || "Ocurrió un problema al registrar tu pedido", 3000);
             }
             hideLoader();
         },
         error: function (xhr, textStatus, error) {
-            console.error('Error AJAX:', {
+            console.error('❌ Error AJAX:', {
                 xhr: xhr,
                 textStatus: textStatus,
                 error: error,
@@ -289,7 +303,7 @@ function cargarDatosCliente() {
     $("#telefono").val(clientemall.telefono || "");
     $("#correo").val(clientemall.correo || "");
     
-    console.log('Cliente cargado:', clientemall);
+    console.log('👤 Cliente cargado:', clientemall);
 }
 
 function cargarDetalleProducto() {
@@ -323,10 +337,7 @@ function cargarDetalleProducto() {
     $("#total").text(total + " " + "Bs.");
     $("#price").text("$ " + montoDolar(total));
     
-    // Initialize PayPal after total is calculated
-    if (!paypalInitialized) {
-        initPayPalButtons();
-    }
+    console.log(`🛒 Total del carrito: ${total} Bs. ($ ${montoDolar(total)})`);
 }
 
 function montoTotal(array, descuentoCliente) {
@@ -349,11 +360,9 @@ function montoDolar(monto) {
 
 function castearCarrito(carrito) {
     carrito.forEach(element => {
-        // Asegurar que tengan los campos necesarios
         if (element.pivot) {
             element.id_menu = element.pivot.id_menu;
         }
-        // Valores por defecto si faltan
         element.id_item_menu = element.id_item_menu || element.id;
         element.cantidad = element.cantidad || 1;
         element.sub_monto = element.sub_monto || 0;
@@ -380,8 +389,11 @@ $("input[type='radio']").change(function () {
             $("#container-button-confirmar").addClass("d-none");
             metodoPago = 2;
             
+            console.log('💳 Método de pago cambiado a PayPal');
+            
             // Initialize PayPal if not done yet
             if (!paypalInitialized) {
+                paypalRetries = 0; // Reset retry counter
                 initPayPalButtons();
             }
         } else {
@@ -390,6 +402,8 @@ $("input[type='radio']").change(function () {
             $("#paypal-button-container").addClass("d-none");
             $("#container-button-confirmar").removeClass("d-none");
             metodoPago = 1;
+            
+            console.log('💰 Método de pago cambiado a Efectivo');
         }
     }
 });
@@ -418,7 +432,6 @@ function initMapConfirmar() {
             return;
         }
 
-        // Initialize map with simple configuration
         const mapOptions = {
             center: myLatLng,
             zoom: 13,
@@ -430,7 +443,6 @@ function initMapConfirmar() {
         
         map = new google.maps.Map(mapContainer, mapOptions);
         
-        // Use legacy marker to avoid compatibility issues
         marker = new google.maps.Marker({
             position: myLatLng,
             map: map,
@@ -438,13 +450,12 @@ function initMapConfirmar() {
             title: 'Arrastra para cambiar ubicación'
         });
 
-        // Add event listeners
         markerListenerDragend(marker);
         mapListenerClick(map, marker);
         initAutoComplete(map, marker);
         
         googleMapsLoaded = true;
-        console.log('Map initialized successfully');
+        console.log('🗺️ Map initialized successfully');
         
     } catch (error) {
         console.error('Error initializing map:', error);
@@ -492,7 +503,6 @@ function markerListenerDragend(marker) {
             $("#latitud").val(latitud);
             $("#longitud").val(longitud);
             
-            // Create event object for reverse geocoding
             const geoEvent = {
                 latLng: position
             };
@@ -511,16 +521,14 @@ function initAutoComplete(map, marker) {
             return;
         }
 
-        // Check if Places library is available
         if (!google.maps.places) {
             console.error('Places library not loaded');
             return;
         }
 
-        // Bolivia bounds
         const boliviaBounds = new google.maps.LatLngBounds(
-            new google.maps.LatLng(-22.896133, -69.640388), // Southwest
-            new google.maps.LatLng(-9.680567, -57.453803)   // Northeast
+            new google.maps.LatLng(-22.896133, -69.640388),
+            new google.maps.LatLng(-9.680567, -57.453803)
         );
 
         const options = {
@@ -639,7 +647,7 @@ function ubicacionActualReady() {
                 marker.setPosition(posicion);
                 map.setZoom(15);
                 
-                console.log('Ubicación obtenida correctamente:', posicion);
+                console.log('📍 Ubicación obtenida correctamente:', posicion);
                 sweentAlert("top-end", "success", "Ubicación actual obtenida", 1500);
             } catch (error) {
                 console.error('Error processing current location:', error);
