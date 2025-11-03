@@ -26,14 +26,14 @@
     <div class="card mb-4">
         <div class="card-header">Agregar ingrediente</div>
         <div class="card-body">
-            <form method="POST" action="{{ route('receta.agregar', $itemMenu->id_item_menu) }}" class="row g-3">
+            <form method="POST" action="{{ route('receta.agregar', $itemMenu->id_item_menu) }}" class="row g-3" id="form-agregar-ingrediente">
                 @csrf
                 <div class="col-md-5">
                     <label class="form-label">Ingrediente</label>
-                    <select name="id_ingrediente" class="form-select" required>
+                    <select name="id_ingrediente" id="id_ingrediente" class="form-select" required>
                         <option value="">Seleccione...</option>
                         @foreach($ingredientesDisponibles as $ing)
-                            <option value="{{ $ing->id_ingrediente }}">{{ $ing->nombre }} ({{ $ing->unidad_medida }})</option>
+                            <option value="{{ $ing->id_ingrediente }}" data-unidad="{{ $ing->unidad_medida }}">{{ $ing->nombre }} ({{ $ing->unidad_medida }})</option>
                         @endforeach
                     </select>
                 </div>
@@ -43,7 +43,7 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Unidad</label>
-                    <select name="unidad_receta" class="form-select" required>
+                    <select name="unidad_receta" id="unidad_receta" class="form-select" required>
                         @foreach(['gramos','kilogramos','mililitros','litros','unidades','porciones'] as $u)
                             <option value="{{ $u }}">{{ $u }}</option>
                         @endforeach
@@ -54,8 +54,8 @@
                     <input type="text" name="observaciones" class="form-control" placeholder="Opcional">
                 </div>
                 <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Agregar</button>
-                    <a href="{{ url('/admin/item-menu') }}" class="btn btn-secondary">Volver</a>
+                    <button type="submit" class="btn btn-primary btn-sm" title="Agregar" data-toggle="tooltip"><i class="fas fa-plus"></i></button>
+                    <a href="{{ url('/admin/item-menu') }}" class="btn btn-secondary btn-sm" title="Volver" data-toggle="tooltip"><i class="fas fa-arrow-left"></i></a>
                 </div>
             </form>
         </div>
@@ -71,7 +71,7 @@
                             <th>Ingrediente</th>
                             <th style="width:160px">Cantidad</th>
                             <th style="width:160px">Unidad</th>
-                            <th style="width:220px">Acciones</th>
+                            <th style="width:160px">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,13 +92,13 @@
                                             @endforeach
                                         </select>
                                 </td>
-                                <td>
-                                        <button type="submit" class="btn btn-sm btn-success mr-2"><i class="fas fa-save"></i> Guardar</button>
+                                <td class="text-nowrap">
+                                        <button type="submit" class="btn btn-sm btn-success mr-1" title="Guardar" data-toggle="tooltip"><i class="fas fa-save"></i></button>
                                     </form>
                                     <form method="POST" action="{{ route('receta.eliminar', [$itemMenu->id_item_menu, $ingrediente->id_ingrediente]) }}" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente de la receta?')"><i class="fas fa-trash"></i> Eliminar</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar" data-toggle="tooltip" onclick="return confirm('¿Eliminar ingrediente de la receta?')"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -112,3 +112,24 @@
     </div>
 </div>
 @endsection
+
+@push('js')
+<script>
+// Al seleccionar un ingrediente, se auto-selecciona su unidad de medida
+(function(){
+  const selIngrediente = document.getElementById('id_ingrediente');
+  const selUnidad = document.getElementById('unidad_receta');
+  if(selIngrediente && selUnidad){
+    selIngrediente.addEventListener('change', function(){
+      const opt = selIngrediente.options[selIngrediente.selectedIndex];
+      const unidad = opt ? opt.getAttribute('data-unidad') : '';
+      if(unidad){
+        for (const o of selUnidad.options){
+          o.selected = (o.value === unidad);
+        }
+      }
+    });
+  }
+})();
+</script>
+@endpush
