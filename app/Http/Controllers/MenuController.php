@@ -20,7 +20,56 @@ use Illuminate\Support\Facades\Schema;
 
 class MenuController extends Controller
 {
-    // ... (métodos getIndex/getCreate/getEdit/index/indexFecha previos aquí)
+    #WEB
+    public function getIndex()
+    {
+        $usuarioAutenticado = Auth::user();
+        $user = User::findOrFail($usuarioAutenticado->id);
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
+            return redirect()->to('admin/rol-error');
+        }
+        return view('pizzeria.menu.index');
+    }
+
+    public function getCreate()
+    {
+        $usuarioAutenticado = Auth::user();
+        $user = User::findOrFail($usuarioAutenticado->id);
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
+            return redirect()->to('admin/rol-error');
+        }
+        return view('pizzeria.menu.create');
+    }
+
+    public function getEdit()
+    {
+        $usuarioAutenticado = Auth::user();
+        $user = User::findOrFail($usuarioAutenticado->id);
+        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
+            return redirect()->to('admin/rol-error');
+        }
+        return view('pizzeria.menu.edit');
+    }
+
+    #API REST
+    public function index()
+    {
+        $menus = Menu::where('estado', 1)
+                    ->with('itemMenus')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+        return new MenuCollection($menus);
+    }
+
+    public function indexFecha(Request $request, $fecha)
+    {
+        $menus = Menu::where('fecha', $fecha)
+                    ->where('estado', 1)
+                    ->with('itemMenus')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+        return new MenuCollection($menus);
+    }
 
     public function store(StoreMenuRequest $request)
     {
@@ -52,9 +101,8 @@ class MenuController extends Controller
                     foreach ($modeloItem->recetas as $ing) {
                         $consumo = (float)$ing->pivot->cantidad_necesaria * (int)$item['cantidad'];
                         $uReceta = $ing->pivot->unidad_receta;
-                        $uStock  = $ing->unidad_medida; // unidad base del inventario
+                        $uStock  = $ing->unidad_medida;
 
-                        // conversiones simples kg<->g y l<->ml
                         if ($uStock === 'kilogramos' && $uReceta === 'gramos') {
                             $consumo *= 0.001;
                         } elseif ($uStock === 'gramos' && $uReceta === 'kilogramos') {
@@ -65,7 +113,6 @@ class MenuController extends Controller
                             $consumo *= 1000;
                         }
 
-                        // Buscar inventario del ingrediente (principal o cualquiera activo)
                         $inv = InventarioAlmacen::where('id_ingrediente', $ing->id_ingrediente)
                                 ->orderByDesc('stock_actual')
                                 ->lockForUpdate()
@@ -78,10 +125,8 @@ class MenuController extends Controller
                             throw new \RuntimeException('STOCK_INSUFICIENTE: '.$ing->nombre);
                         }
 
-                        // Reducir stock usando el método del modelo
                         $inv->reducirStock($consumo);
 
-                        // Registrar movimiento si existe la tabla
                         if (Schema::hasTable('movimientos_inventario')) {
                             DB::table('movimientos_inventario')->insert([
                                 'id_ingrediente' => $ing->id_ingrediente,
@@ -103,7 +148,6 @@ class MenuController extends Controller
                 'data'    => $menu,
             ];
         } catch (\Throwable $e) {
-            // Normalizar el mensaje de error para el front
             $msg = str_contains($e->getMessage(), 'STOCK_INSUFICIENTE') ? 'Stock insuficiente' : 'Error al insertar el registro.';
             return [
                 'message' => $msg,
@@ -112,6 +156,4 @@ class MenuController extends Controller
             ];
         }
     }
-
-    // ... (resto del controlador sin cambios)
 }
