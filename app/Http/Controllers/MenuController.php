@@ -9,6 +9,8 @@ use App\Http\Resources\MenuCollection;
 use App\Http\Resources\MenuResource;
 use App\Models\MenuItemMenu;
 use App\Models\User;
+use App\Models\ItemMenu;
+use App\Models\Ingrediente;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -75,25 +77,72 @@ class MenuController extends Controller
         try {
             $datos = $request->json()->all();
 
-            $menu = Menu::create([
-                'nombre' => $datos['nombre'],
-                'descripcion' => $datos['descripcion'],
-                'fecha' => $datos['fecha'],
-            ]);
-
-            $idMenu = $menu->id_menu;
-            $items = $datos['items_menu'];
-
-            foreach ($items as $item) {
-                MenuItemMenu::create([
-                    'id_menu' => $idMenu,
-                    'id_item_menu' => $item['id_item_menu'],
-                    'cantidad' => $item['cantidad'],
+            DB::transaction(function () use (&$menu, $datos) {
+                $menu = Menu::create([
+                    'nombre' => $datos['nombre'],
+                    'descripcion' => $datos['descripcion'],
+                    'fecha' => $datos['fecha'],
                 ]);
-            }
+
+                $idMenu = $menu->id_menu;
+                $items = $datos['items_menu'];
+
+                foreach ($items as $item) {
+                    MenuItemMenu::create([
+                        'id_menu' => $idMenu,
+                        'id_item_menu' => $item['id_item_menu'],
+                        'cantidad' => $item['cantidad'],
+                    ]);
+
+                    // Descontar inventario por receta
+                    $modeloItem = ItemMenu::with(['recetas' => function($q){
+                        $q->select('ingredientes.id_ingrediente','ingredientes.unidad_medida','receta_item_menu.cantidad_necesaria','receta_item_menu.unidad_receta');
+                    }])->findOrFail($item['id_item_menu']);
+
+                    foreach ($modeloItem->recetas as $ing) {
+                        $consumo = (float)$ing->pivot->cantidad_necesaria * (int)$item['cantidad'];
+                        $uReceta = $ing->pivot->unidad_receta;
+                        $uStock = $ing->unidad_medida; // unidad base guardada en ingrediente
+
+                        // conversiones simples kg<->g y l<->ml
+                        if ($uStock === 'kilogramos' && $uReceta === 'gramos') {
+                            $consumo *= 0.001;
+                        } elseif ($uStock === 'gramos' && $uReceta === 'kilogramos') {
+                            $consumo *= 1000;
+                        } elseif ($uStock === 'litros' && $uReceta === 'mililitros') {
+                            $consumo *= 0.001;
+                        } elseif ($uStock === 'mililitros' && $uReceta === 'litros') {
+                            $consumo *= 1000;
+                        }
+
+                        // verificar stock suficiente y decrementar de forma atómica
+                        $afectados = DB::table('ingredientes')
+                            ->where('id_ingrediente', $ing->id_ingrediente)
+                            ->where('stock', '>=', $consumo)
+                            ->decrement('stock', $consumo);
+
+                        if ($afectados === 0) {
+                            throw new \RuntimeException('Stock insuficiente para '.$ing->nombre);
+                        }
+
+                        // registrar movimiento (si existe la tabla; si no, omitir)
+                        if (Schema::hasTable('movimientos_inventario')) {
+                            DB::table('movimientos_inventario')->insert([
+                                'id_ingrediente' => $ing->id_ingrediente,
+                                'tipo' => 'salida',
+                                'cantidad' => $consumo,
+                                'unidad' => $uStock,
+                                'motivo' => 'Consumo por menú: '.$menu->id_menu,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+                }
+            });
 
             $response = [
-                'message' => 'Registro insertado correctamente.',
+                'message' => 'Registro insertado y stock actualizado correctamente.',
                 'status' => 200,
                 'data' => $menu,
             ];
