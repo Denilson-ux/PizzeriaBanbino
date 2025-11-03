@@ -3,8 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RecetaController;
 
-// Rutas para gestionar receta por item
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+Route::middleware(['web','auth'])->prefix('admin')->group(function () {
     Route::get('item-menu/{id}/receta', [RecetaController::class, 'show'])->name('receta.show');
     Route::post('item-menu/{id}/receta', [RecetaController::class, 'agregarIngrediente'])->name('receta.agregar');
     Route::put('item-menu/{id}/receta/{idIngrediente}', [RecetaController::class, 'actualizarIngrediente'])->name('receta.actualizar');
