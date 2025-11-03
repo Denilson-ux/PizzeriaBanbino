@@ -15,12 +15,16 @@ class RecetaController extends Controller
      */
     public function show($idItemMenu)
     {
-        $itemMenu = ItemMenu::with(['recetas.ingrediente.almacen', 'tipoMenu'])->findOrFail($idItemMenu);
+        // Cargar recetas (ingredientes) y para cada ingrediente, su 'almacen'.
+        $itemMenu = ItemMenu::with(['recetas' => function ($q) {
+            $q->with('almacen');
+        }, 'tipoMenu'])->findOrFail($idItemMenu);
+
         $ingredientesDisponibles = Ingrediente::activos()->orderBy('categoria', 'asc')->orderBy('nombre')->get();
         
         return view('recetas.show', compact('itemMenu', 'ingredientesDisponibles'));
     }
-    
+
     /**
      * Agregar ingrediente a la receta
      */
@@ -58,7 +62,7 @@ class RecetaController extends Controller
             return back()->withErrors(['error' => 'Error al agregar ingrediente: ' . $e->getMessage()]);
         }
     }
-    
+
     /**
      * Actualizar ingrediente en la receta
      */
@@ -85,7 +89,7 @@ class RecetaController extends Controller
             return back()->withErrors(['error' => 'Error al actualizar ingrediente: ' . $e->getMessage()]);
         }
     }
-    
+
     /**
      * Eliminar ingrediente de la receta
      */
@@ -101,7 +105,7 @@ class RecetaController extends Controller
             return back()->withErrors(['error' => 'Error al eliminar ingrediente: ' . $e->getMessage()]);
         }
     }
-    
+
     /**
      * Verificar disponibilidad de ingredientes para una cantidad de platos
      */
@@ -111,15 +115,16 @@ class RecetaController extends Controller
             'cantidad_platos' => 'required|integer|min:1'
         ]);
         
-        $itemMenu = ItemMenu::with('recetas.ingrediente.almacen')->findOrFail($idItemMenu);
+        $itemMenu = ItemMenu::with(['recetas' => function ($q) {
+            $q->with('almacen');
+        }])->findOrFail($idItemMenu);
         $cantidadPlatos = $request->cantidad_platos;
         
         $disponibilidad = [];
         $puedePreparar = true;
         
-        foreach ($itemMenu->recetas as $receta) {
-            $ingrediente = $receta->ingrediente;
-            $cantidadNecesaria = $receta->pivot->cantidad_necesaria * $cantidadPlatos;
+        foreach ($itemMenu->recetas as $ingrediente) {
+            $cantidadNecesaria = $ingrediente->pivot->cantidad_necesaria * $cantidadPlatos;
             $stockDisponible = $ingrediente->almacen ? $ingrediente->almacen->stock_actual : 0;
             $suficiente = $stockDisponible >= $cantidadNecesaria;
             
@@ -133,7 +138,7 @@ class RecetaController extends Controller
                 'disponible' => $stockDisponible,
                 'suficiente' => $suficiente,
                 'faltante' => $suficiente ? 0 : ($cantidadNecesaria - $stockDisponible),
-                'unidad' => $receta->pivot->unidad_receta
+                'unidad' => $ingrediente->pivot->unidad_receta
             ];
         }
         
@@ -143,18 +148,14 @@ class RecetaController extends Controller
             'ingredientes' => $disponibilidad
         ]);
     }
-    
-    /**
-     * Calcular cuántos platos se pueden preparar como máximo
-     */
+
     private function calcularCantidadMaxima($itemMenu)
     {
         $cantidadMaxima = PHP_INT_MAX;
         
-        foreach ($itemMenu->recetas as $receta) {
-            $ingrediente = $receta->ingrediente;
+        foreach ($itemMenu->recetas as $ingrediente) {
             $stockDisponible = $ingrediente->almacen ? $ingrediente->almacen->stock_actual : 0;
-            $cantidadPorPlato = $receta->pivot->cantidad_necesaria;
+            $cantidadPorPlato = $ingrediente->pivot->cantidad_necesaria;
             
             if ($cantidadPorPlato > 0) {
                 $platosDisponibles = floor($stockDisponible / $cantidadPorPlato);
@@ -163,62 +164,5 @@ class RecetaController extends Controller
         }
         
         return $cantidadMaxima === PHP_INT_MAX ? 0 : $cantidadMaxima;
-    }
-    
-    /**
-     * Descontar ingredientes del almacén al realizar una venta
-     */
-    public static function descontarIngredientesPorVenta($idItemMenu, $cantidad, $idUsuario = null, $referencia = null)
-    {
-        $itemMenu = ItemMenu::with('recetas.ingrediente.almacen')->findOrFail($idItemMenu);
-        $movimientos = [];
-        
-        try {
-            DB::beginTransaction();
-            
-            foreach ($itemMenu->recetas as $receta) {
-                $ingrediente = $receta->ingrediente;
-                $cantidadNecesaria = $receta->pivot->cantidad_necesaria * $cantidad;
-                
-                if ($ingrediente->almacen) {
-                    $almacen = $ingrediente->almacen;
-                    
-                    if ($almacen->stock_actual >= $cantidadNecesaria) {
-                        $stockAnterior = $almacen->stock_actual;
-                        $nuevoStock = $almacen->stock_actual - $cantidadNecesaria;
-                        
-                        $almacen->update([
-                            'stock_actual' => $nuevoStock,
-                            'fecha_ultimo_egreso' => now()
-                        ]);
-                        
-                        // Crear movimiento
-                        $movimiento = $almacen->movimientos()->create([
-                            'tipo_movimiento' => 'salida',
-                            'cantidad' => $cantidadNecesaria,
-                            'stock_anterior' => $stockAnterior,
-                            'stock_nuevo' => $nuevoStock,
-                            'motivo' => 'venta',
-                            'fecha_movimiento' => now(),
-                            'usuario_id' => $idUsuario ?: auth()->id(),
-                            'referencia_id' => $referencia,
-                            'referencia_tipo' => 'venta',
-                            'observaciones' => "Venta de {$cantidad}x {$itemMenu->nombre}"
-                        ]);
-                        
-                        $movimientos[] = $movimiento;
-                    } else {
-                        throw new \Exception("Stock insuficiente del ingrediente: {$ingrediente->nombre}");
-                    }
-                }
-            }
-            
-            DB::commit();
-            return ['success' => true, 'movimientos' => $movimientos];
-            
-        } catch (\Exception $e) {
-            DB::rollback();
-            return ['success' => false, 'error' => $e->getMessage()];
-        }
     }
 }
