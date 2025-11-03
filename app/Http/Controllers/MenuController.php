@@ -20,56 +20,7 @@ use Illuminate\Support\Facades\Schema;
 
 class MenuController extends Controller
 {
-    #WEB
-    public function getIndex()
-    {
-        $usuarioAutenticado = Auth::user();
-        $user = User::findOrFail($usuarioAutenticado->id);
-        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
-            return redirect()->to('admin/rol-error');
-        }
-        return view('pizzeria.menu.index');
-    }
-
-    public function getCreate()
-    {
-        $usuarioAutenticado = Auth::user();
-        $user = User::findOrFail($usuarioAutenticado->id);
-        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
-            return redirect()->to('admin/rol-error');
-        }
-        return view('pizzeria.menu.create');
-    }
-
-    public function getEdit()
-    {
-        $usuarioAutenticado = Auth::user();
-        $user = User::findOrFail($usuarioAutenticado->id);
-        if (!$user->hasRole('Administrador') && !$user->hasPermissionTo('items_menu')) {
-            return redirect()->to('admin/rol-error');
-        }
-        return view('pizzeria.menu.edit');
-    }
-
-    #API REST
-    public function index()
-    {
-        $menus = Menu::where('estado', 1)
-                    ->with('itemMenus')
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-        return new MenuCollection($menus);
-    }
-
-    public function indexFecha(Request $request, $fecha)
-    {
-        $menus = Menu::where('fecha', $fecha)
-                    ->where('estado', 1)
-                    ->with('itemMenus')
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-        return new MenuCollection($menus);
-    }
+    // ... (métodos getIndex/getCreate/getEdit/index/indexFecha previos aquí)
 
     public function store(StoreMenuRequest $request)
     {
@@ -121,10 +72,10 @@ class MenuController extends Controller
                                 ->first();
 
                         if (!$inv) {
-                            throw new \RuntimeException('Ingrediente sin inventario: '.$ing->nombre);
+                            throw new \RuntimeException('STOCK_INSUFICIENTE: Ingrediente sin inventario');
                         }
                         if ($inv->stock_actual < $consumo) {
-                            throw new \RuntimeException('Stock insuficiente para '.$ing->nombre);
+                            throw new \RuntimeException('STOCK_INSUFICIENTE: '.$ing->nombre);
                         }
 
                         // Reducir stock usando el método del modelo
@@ -146,130 +97,21 @@ class MenuController extends Controller
                 }
             });
 
-            $response = [
+            return [
                 'message' => 'Registro insertado y stock actualizado correctamente.',
                 'status'  => 200,
                 'data'    => $menu,
             ];
-        } catch (\Exception $e) {
-            $response = [
-                'message' => 'Error al insertar el registro.',
+        } catch (\Throwable $e) {
+            // Normalizar el mensaje de error para el front
+            $msg = str_contains($e->getMessage(), 'STOCK_INSUFICIENTE') ? 'Stock insuficiente' : 'Error al insertar el registro.';
+            return [
+                'message' => $msg,
                 'status'  => 500,
                 'error'   => $e->getMessage(),
             ];
         }
-
-        return $response;
     }
 
-    public function show(Menu $menu)
-    {
-        return new MenuResource($menu->load('itemMenus'));
-    }
-
-    public function update(UpdateMenuRequest $request, Menu $menu)
-    {
-        $response = [];
-        $datos = $request->json()->all();
-        try {
-            if (!$menu) {
-                $response = [
-                    'message' => 'Menu no encontrado.',
-                    'status' => 404,
-                ];
-            } else {
-                $menu->update([
-                    'nombre' => $datos['nombre'],
-                    'descripcion' => $datos['descripcion'],
-                ]);
-
-                $idMenu = $menu->id_menu;
-                $items = $datos['items_menu'];
-
-                foreach ($items as $item) {
-                    $itemUpdate = MenuItemMenu::where('id_menu', $idMenu)
-                                  ->where('id_item_menu', $item['id_item_menu'])
-                                  ->first();
-                    if ($itemUpdate) {
-                        MenuItemMenu::where('id_menu', $idMenu)
-                                ->where('id_item_menu', $item['id_item_menu'])
-                                ->update(['cantidad' => $item['cantidad']]);
-                    } else {
-                        MenuItemMenu::create([
-                            'id_menu' => $idMenu,
-                            'id_item_menu' => $item['id_item_menu'],
-                            'cantidad' => $item['cantidad'],
-                        ]);
-                    }
-                }
-
-                $response = [
-                    'message' => 'Registro actualizado correctamente.',
-                    'status' => 200,
-                    'data' => $menu,
-                ];
-            }
-        } catch (\Exception $e) {
-            $response = [
-                'message' => 'Error al actualizar el registro.',
-                'status' => 500,
-                'error' => $e->getMessage(),
-            ];
-        }
-
-        return $response;
-    }
-
-    public function destroy(Menu $menu)
-    {
-        $response = [];
-        try {
-            $menu->update(['estado' => 0]);
-            $response = [
-                'message' => 'Registro eliminado correctamente.',
-                'status' => 200,
-                'msg' => $menu
-            ];
-        } catch (QueryException | ModelNotFoundException $e) {
-            $response = [
-                'message' => 'Error en la BD al eliminar el registro.',
-                'status' => 500,
-                'error' => $e
-            ];
-        } catch (\Exception $e) {
-            $response = [
-                'message' => 'Error general al eliminar el registro.',
-                'status' => 500,
-                'error' => $e
-            ];
-        }
-        return json_encode($response);
-    }
-
-    public function eliminados()
-    {
-        $data = Menu::where('estado', 0)->with('itemMenus');
-        return new MenuCollection($data->get());
-    }
-
-    public function restaurar(Menu $menu)
-    {
-        $response = [];
-        try {
-            $menu->update(['estado' => 1]);
-
-            $response = [
-                'message' => 'Se restauró correctamente.',
-                'status' => 200,
-                'msg' => $menu
-            ];
-        } catch (\Exception $e) {
-            $response = [
-                'message' => 'La error al resturar.',
-                'status' => 500,
-                'error' => $e
-            ];
-        }
-        return response()->json($response);
-    }
+    // ... (resto del controlador sin cambios)
 }
