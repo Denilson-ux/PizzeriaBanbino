@@ -1,11 +1,13 @@
-@extends('layouts.app')
+@extends('adminlte::page')
+
+@section('title', 'Gestionar receta')
+
+@section('content_header')
+    <h1>Gestionar receta: {{ $itemMenu->nombre }}</h1>
+@stop
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Gestionar receta: {{ $itemMenu->nombre }}</h3>
-        <a href="{{ url('/admin/item-menu') }}" class="btn btn-secondary">Volver</a>
-    </div>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -42,12 +44,9 @@
                 <div class="col-md-2">
                     <label class="form-label">Unidad</label>
                     <select name="unidad_receta" class="form-select" required>
-                        <option value="gramos">gramos</option>
-                        <option value="kilogramos">kilogramos</option>
-                        <option value="mililitros">mililitros</option>
-                        <option value="litros">litros</option>
-                        <option value="unidades">unidades</option>
-                        <option value="porciones">porciones</option>
+                        @foreach(['gramos','kilogramos','mililitros','litros','unidades','porciones'] as $u)
+                            <option value="{{ $u }}">{{ $u }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-12">
@@ -56,6 +55,7 @@
                 </div>
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary">Agregar</button>
+                    <a href="{{ url('/admin/item-menu') }}" class="btn btn-secondary">Volver</a>
                 </div>
             </form>
         </div>
@@ -71,7 +71,7 @@
                             <th>Ingrediente</th>
                             <th style="width:160px">Cantidad</th>
                             <th style="width:160px">Unidad</th>
-                            <th style="width:200px">Acciones</th>
+                            <th style="width:220px">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -93,12 +93,12 @@
                                         </select>
                                 </td>
                                 <td>
-                                        <button type="submit" class="btn btn-sm btn-success">Guardar</button>
+                                        <button type="submit" class="btn btn-sm btn-success mr-2"><i class="fas fa-save"></i> Guardar</button>
                                     </form>
                                     <form method="POST" action="{{ route('receta.eliminar', [$itemMenu->id_item_menu, $receta->id_ingrediente]) }}" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente de la receta?')">Eliminar</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente de la receta?')"><i class="fas fa-trash"></i> Eliminar</button>
                                     </form>
                                 </td>
                             </tr>
