@@ -107,6 +107,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('compras/{id}/cancelar', [CompraController::class, 'cancelar'])->name('compras.cancelar');
     Route::get('api/compras/productos', [CompraController::class, 'getIngredientes'])->name('compras.get_productos');
     Route::get('api/compras/almacenes', [CompraController::class, 'getAlmacenes'])->name('compras.get_almacenes');
+    Route::get('api/compras/stock-por-almacen', [CompraController::class, 'getStockPorAlmacen'])->name('compras.stock_por_almacen');
 
     // Recetas (incluidas directamente)
     require __DIR__.'/recetas.php';
