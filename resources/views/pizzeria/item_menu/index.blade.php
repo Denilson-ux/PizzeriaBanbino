@@ -52,7 +52,7 @@
                                 <th data-sortable="true" data-field="descripcion">Descripcion</th>
                                 <th data-sortable="true" data-field="tipo_menu">Tipo item menú</th>
                                 <th data-sortable="true" data-width="200" data-field="imagen_td">Imagen</th>
-                                <th data-sortable="true" data-width="100" data-field="acciones">Acción</th>
+                                <th data-sortable="true" data-width="160" data-field="acciones">Acción</th>
                             </tr>
                         </thead>
                     </table>
@@ -79,7 +79,7 @@
                                 <th data-sortable="true" data-field="descripcion">Descripcion</th>
                                 <th data-sortable="true" data-field="tipo_menu">Tipo item menú</th>
                                 <th data-sortable="true" data-width="200" data-field="imagen_td">Imagen</th>
-                                <th data-sortable="true" data-width="100" data-field="acciones">Acción</th>
+                                <th data-sortable="true" data-width="160" data-field="acciones">Acción</th>
                             </tr>
                         </thead>
                     </table>
@@ -269,4 +269,25 @@
 
     <script src="{{asset('/pizzeria/js/parametros.js')}}"></script>
     <script src="{{asset('/pizzeria/js/item_menu.js')}}"></script>
+
+    <script>
+      // Aumentar columna Acciones y agregar botón Gestionar receta desde el formatter en item_menu.js si existe.
+      // Si no, agrega aquí un formatter básico para la columna 'acciones'.
+      if (typeof window.accionesFormatter === 'undefined') {
+        window.accionesFormatter = function(value, row) {
+          const gestionar = `<a href="/admin/item-menu/${row.id_item_menu}/receta" class="btn btn-sm btn-secondary mr-1">Gestionar receta</a>`;
+          const editar = `<a class="btn btn-sm btn-warning mr-1" onclick="window.editarItem && window.editarItem(${row.id_item_menu})">Editar</a>`;
+          const eliminar = `<a class="btn btn-sm btn-danger" onclick="window.eliminarItem && window.eliminarItem(${row.id_item_menu})">Eliminar</a>`;
+          return gestionar + editar + eliminar;
+        }
+        // Enlazar formatter si la tabla aún no lo tiene
+        document.addEventListener('DOMContentLoaded', function() {
+          const $tabla = $('#tabla-item-menu');
+          if ($tabla.length) {
+            const cols = $tabla.bootstrapTable('getOptions').columns || [];
+            // Si no hay definidas columnas programáticamente, no tocamos.
+          }
+        });
+      }
+    </script>
 @stop
