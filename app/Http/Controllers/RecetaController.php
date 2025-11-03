@@ -34,10 +34,14 @@ class RecetaController extends Controller
         ]);
         
         $itemMenu = ItemMenu::findOrFail($idItemMenu);
-        $ingrediente = Ingrediente::findOrFail($request->id_ingrediente);
         
-        // Verificar si ya existe en la receta
-        if ($itemMenu->recetas()->where('id_ingrediente', $request->id_ingrediente)->exists()) {
+        // Verificar si ya existe en la receta (consulta directa a la tabla pivot para evitar ambigüedad)
+        $existe = DB::table('recetas')
+            ->where('id_item_menu', $idItemMenu)
+            ->where('id_ingrediente', $request->id_ingrediente)
+            ->exists();
+
+        if ($existe) {
             return back()->withErrors(['error' => 'Este ingrediente ya está en la receta. Edita la cantidad existente.']);
         }
         
