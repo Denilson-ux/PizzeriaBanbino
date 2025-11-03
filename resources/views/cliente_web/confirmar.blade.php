@@ -117,7 +117,22 @@
 @section('clienteweb-js')
 
     <!-- PayPal SDK - forzado sandbox con alias sb -->
-    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&components=buttons"></script>
+    @php
+    $paypalMode = config('paypal.mode');
+    $clientId = $paypalMode === 'live' 
+        ? config('paypal.live.client_id') 
+        : config('paypal.sandbox.client_id');
+@endphp
+
+<script src="https://www.paypal.com/sdk/js?client-id={{ $clientId }}&currency=USD"></script>
+
+@if(config('app.debug'))
+<script>
+    console.log('PayPal Mode: {{ $paypalMode }}');
+    console.log('PayPal Client ID: {{ substr($clientId, 0, 10) }}...');
+</script>
+@endif
+
 
     <!-- Maps -->
     <script async defer
