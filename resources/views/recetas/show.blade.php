@@ -75,18 +75,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($itemMenu->recetas as $receta)
+                        @forelse ($itemMenu->recetas as $ingrediente)
                             <tr>
-                                <td>{{ $receta->ingrediente->nombre }}</td>
+                                <td>{{ $ingrediente->nombre ?? '[ELIMINADO]' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ route('receta.actualizar', [$itemMenu->id_item_menu, $receta->id_ingrediente]) }}" class="d-flex gap-2">
+                                    <form method="POST" action="{{ route('receta.actualizar', [$itemMenu->id_item_menu, $ingrediente->id_ingrediente]) }}" class="d-flex gap-2">
                                         @csrf
                                         @method('PUT')
-                                        <input type="number" step="0.001" min="0.001" name="cantidad_necesaria" value="{{ $receta->pivot->cantidad_necesaria }}" class="form-control" required>
+                                        <input type="number" step="0.001" min="0.001" name="cantidad_necesaria" value="{{ $ingrediente->pivot->cantidad_necesaria }}" class="form-control" required>
                                 </td>
                                 <td>
                                         <select name="unidad_receta" class="form-select" required>
-                                            @php($unidadActual = $receta->pivot->unidad_receta)
+                                            @php($unidadActual = $ingrediente->pivot->unidad_receta)
                                             @foreach(['gramos','kilogramos','mililitros','litros','unidades','porciones'] as $u)
                                                 <option value="{{ $u }}" @selected($u==$unidadActual)>{{ $u }}</option>
                                             @endforeach
@@ -95,7 +95,7 @@
                                 <td>
                                         <button type="submit" class="btn btn-sm btn-success mr-2"><i class="fas fa-save"></i> Guardar</button>
                                     </form>
-                                    <form method="POST" action="{{ route('receta.eliminar', [$itemMenu->id_item_menu, $receta->id_ingrediente]) }}" class="d-inline">
+                                    <form method="POST" action="{{ route('receta.eliminar', [$itemMenu->id_item_menu, $ingrediente->id_ingrediente]) }}" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar ingrediente de la receta?')"><i class="fas fa-trash"></i> Eliminar</button>
