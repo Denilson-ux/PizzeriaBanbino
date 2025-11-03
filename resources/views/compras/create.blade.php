@@ -221,13 +221,8 @@
                                                 <option value="{{ $ingrediente->id_ingrediente }}" 
                                                         data-nombre="{{ $ingrediente->nombre }}" 
                                                         data-categoria="{{ $ingrediente->categoria ?? 'Otros' }}"
-                                                        data-stock="{{ $ingrediente->stock_actual }}"
-                                                        data-unidad="{{ $ingrediente->unidad_medida }}"
-                                                        data-stock-bajo="{{ $ingrediente->stock_bajo ? 1 : 0 }}">
+                                                        data-unidad="{{ $ingrediente->unidad_medida }}">
                                                     {{ $ingrediente->nombre }} ({{ $ingrediente->unidad_medida }})
-                                                    @if($ingrediente->stock_bajo)
-                                                        <span class="text-danger">- Stock Bajo</span>
-                                                    @endif
                                                 </option>
                                             @endforeach
                                         </optgroup>
@@ -299,6 +294,8 @@
 <script>
     let ingredientesAgregados = [];
     let contadorIngredientes = 0;
+    let almacenSeleccionado = null;
+    let stockPorAlmacen = {};
 
     $(document).ready(function() {
         // Inicializar Select2
@@ -314,12 +311,13 @@
             dropdownParent: $('#ingredienteModal')
         });
 
-        // Mostrar información del almacén seleccionado
+        // Mostrar información del almacén seleccionado y cargar stock
         $('#id_almacen_destino').on('change', function() {
             const selectedOption = $(this).find('option:selected');
             const valor = $(this).val();
             
             if (valor) {
+                almacenSeleccionado = valor;
                 const nombre = selectedOption.text().split(' - ')[0];
                 const ubicacion = selectedOption.data('ubicacion') || 'No especificada';
                 const responsable = selectedOption.data('responsable') || 'No asignado';
@@ -349,16 +347,63 @@
                     $('#infoAlmacen').show();
                 }
                 
+                // Cargar stock del almacén seleccionado
+                cargarStockPorAlmacen(valor);
+                
                 // Actualizar el mensaje de información de compra si hay ingredientes
                 if (ingredientesAgregados.length > 0) {
                     $('#infoCompra').show();
                 }
             } else {
+                almacenSeleccionado = null;
+                stockPorAlmacen = {};
                 $('#panelAlmacen').hide();
                 $('#infoAlmacen').hide();
                 $('#infoCompra').hide();
             }
         });
+
+        // Función para cargar stock por almacén
+        function cargarStockPorAlmacen(idAlmacen) {
+            $.ajax({
+                url: '{{ route("compras.stock_por_almacen") }}',
+                type: 'GET',
+                data: { id_almacen: idAlmacen },
+                success: function(response) {
+                    stockPorAlmacen = {};
+                    response.forEach(function(item) {
+                        stockPorAlmacen[item.id_ingrediente] = {
+                            stock_actual: item.stock_actual,
+                            stock_minimo: item.stock_minimo,
+                            unidad_medida: item.unidad_medida,
+                            estado_stock: item.estado_stock,
+                            stock_bajo: item.stock_bajo
+                        };
+                    });
+                    // Actualizar stocks mostrados en ingredientes ya agregados
+                    actualizarStocksMostrados();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al cargar stock por almacén:', error);
+                }
+            });
+        }
+
+        // Función para actualizar stocks mostrados en la tabla
+        function actualizarStocksMostrados() {
+            $('#ingredientesBody tr').each(function() {
+                const idIngrediente = $(this).find('input[name*="[id_ingrediente]"]').val();
+                const stockCell = $(this).find('td:nth-child(6)');
+                
+                if (stockPorAlmacen[idIngrediente]) {
+                    const stock = stockPorAlmacen[idIngrediente];
+                    const stockBadge = stock.stock_bajo ? 'badge-warning' : 'badge-secondary';
+                    stockCell.html(`<small class="badge ${stockBadge}">${stock.stock_actual} ${stock.unidad_medida}</small>`);
+                } else {
+                    stockCell.html('<small class="badge badge-light">Sin stock</small>');
+                }
+            });
+        }
 
         // Agregar ingrediente al modal
         $('#agregarIngrediente').click(function() {
@@ -378,26 +423,31 @@
         // Mostrar información al seleccionar ingrediente
         $('#ingrediente_select').on('change', function() {
             const selectedOption = $(this).find('option:selected');
-            const valor = $(this).val();
+            const idIngrediente = $(this).val();
             
-            if (valor) {
-                const stock = selectedOption.data('stock');
+            if (idIngrediente && almacenSeleccionado) {
                 const unidad = selectedOption.data('unidad');
-                const stockBajo = selectedOption.data('stock-bajo');
-                
-                $('#stockActual').text(stock);
                 $('#unidadMedida').text(unidad);
                 $('#unidadIngrediente').text(unidad);
                 
-                if (stockBajo) {
-                    $('#estadoStock').html('<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Stock Bajo</span>');
+                // Buscar stock específico del almacén seleccionado
+                if (stockPorAlmacen[idIngrediente]) {
+                    const stock = stockPorAlmacen[idIngrediente];
+                    $('#stockActual').text(stock.stock_actual);
+                    
+                    if (stock.stock_bajo) {
+                        $('#estadoStock').html('<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Stock Bajo</span>');
+                    } else if (stock.stock_actual <= 0) {
+                        $('#estadoStock').html('<span class="text-danger"><i class="fas fa-times-circle"></i> Sin Stock</span>');
+                    } else {
+                        $('#estadoStock').html('<span class="text-success"><i class="fas fa-check"></i> Stock Normal</span>');
+                    }
                 } else {
-                    $('#estadoStock').html('<span class="text-success"><i class="fas fa-check"></i> Stock Normal</span>');
+                    $('#stockActual').text('0');
+                    $('#estadoStock').html('<span class="text-danger"><i class="fas fa-times-circle"></i> Sin Stock en este Almacén</span>');
                 }
                 
                 $('#stockInfo, #unidadInfo').show();
-                
-                // NO autocompletar precio - mantener vacío para entrada manual
                 $('#precio_unitario').focus();
             } else {
                 $('#stockInfo, #subtotalInfo, #unidadInfo').hide();
@@ -430,7 +480,6 @@
             const cantidad = parseFloat($('#cantidad').val());
             const precio = parseFloat($('#precio_unitario').val());
             const observaciones = $('#observaciones_ingrediente').val();
-            const stockActual = selectedOption.data('stock');
             const unidadMedida = selectedOption.data('unidad');
             
             if (!ingredienteId || !cantidad || !precio) {
@@ -447,6 +496,14 @@
             const subtotal = cantidad * precio;
             contadorIngredientes++;
             
+            // Obtener stock actual del almacén seleccionado
+            let stockActual = 0;
+            let stockBajo = false;
+            if (stockPorAlmacen[ingredienteId]) {
+                stockActual = stockPorAlmacen[ingredienteId].stock_actual;
+                stockBajo = stockPorAlmacen[ingredienteId].stock_bajo;
+            }
+            
             const ingrediente = {
                 id: ingredienteId,
                 nombre: ingredienteNombre,
@@ -457,7 +514,8 @@
                 observaciones: observaciones,
                 stock: stockActual,
                 unidad: unidadMedida,
-                contador: contadorIngredientes
+                contador: contadorIngredientes,
+                stock_bajo: stockBajo
             };
             
             ingredientesAgregados.push(ingrediente);
@@ -468,6 +526,9 @@
         });
 
         function agregarFilaIngrediente(ingrediente) {
+            const stockBadge = ingrediente.stock_bajo ? 'badge-warning' : (ingrediente.stock > 0 ? 'badge-secondary' : 'badge-light');
+            const stockText = ingrediente.stock > 0 ? `${ingrediente.stock} ${ingrediente.unidad}` : 'Sin stock';
+            
             const fila = `
                 <tr id="ingrediente_${ingrediente.contador}">
                     <td>
@@ -500,7 +561,7 @@
                         <strong class="subtotal-ingrediente">S/. ${ingrediente.subtotal.toFixed(2)}</strong>
                     </td>
                     <td>
-                        <small class="badge badge-secondary">${ingrediente.stock} ${ingrediente.unidad}</small>
+                        <small class="badge ${stockBadge}">${stockText}</small>
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-danger" onclick="eliminarIngrediente(${ingrediente.contador})">
