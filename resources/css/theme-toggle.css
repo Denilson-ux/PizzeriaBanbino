@@ -1,0 +1,261 @@
+/* Theme Toggle CSS - Variables para modo claro y oscuro */
+
+:root {
+  /* Colores modo claro */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-muted: #adb5bd;
+  --border-color: #dee2e6;
+  --card-bg: #ffffff;
+  --sidebar-bg: #343a40;
+  --sidebar-text: #ffffff;
+  --navbar-bg: #ffffff;
+  --navbar-text: #212529;
+  --link-color: #007bff;
+  --link-hover: #0056b3;
+  --button-primary: #007bff;
+  --button-primary-hover: #0056b3;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
+  --table-stripe: #f8f9fa;
+  --breadcrumb-bg: #e9ecef;
+}
+
+[data-theme="dark"] {
+  /* Colores modo oscuro */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d30;
+  --bg-tertiary: #3c3c3f;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #6c6c6c;
+  --border-color: #404040;
+  --card-bg: #2d2d30;
+  --sidebar-bg: #1e1e1e;
+  --sidebar-text: #ffffff;
+  --navbar-bg: #2d2d30;
+  --navbar-text: #ffffff;
+  --link-color: #4dabf7;
+  --link-hover: #339af0;
+  --button-primary: #4dabf7;
+  --button-primary-hover: #339af0;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --input-bg: #3c3c3f;
+  --input-border: #555555;
+  --table-stripe: #3c3c3f;
+  --breadcrumb-bg: #3c3c3f;
+}
+
+/* Aplicar variables CSS a los elementos principales */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Sidebar */
+.main-sidebar {
+  background-color: var(--sidebar-bg) !important;
+}
+
+.main-sidebar .nav-link {
+  color: var(--sidebar-text) !important;
+}
+
+.main-sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Navbar */
+.main-header.navbar {
+  background-color: var(--navbar-bg) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: var(--navbar-text) !important;
+}
+
+/* Content wrapper */
+.content-wrapper {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Cards */
+.card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 4px var(--shadow) !important;
+}
+
+.card-header {
+  background-color: var(--bg-tertiary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.card-body {
+  color: var(--text-primary) !important;
+}
+
+/* Tables */
+.table {
+  color: var(--text-primary) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--table-stripe) !important;
+}
+
+.table th,
+.table td {
+  border-color: var(--border-color) !important;
+}
+
+/* Forms */
+.form-control {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control:focus {
+  background-color: var(--input-bg) !important;
+  border-color: var(--button-primary) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--button-primary) !important;
+  border-color: var(--button-primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--button-primary-hover) !important;
+  border-color: var(--button-primary-hover) !important;
+}
+
+/* Links */
+a {
+  color: var(--link-color) !important;
+}
+
+a:hover {
+  color: var(--link-hover) !important;
+}
+
+/* Breadcrumbs */
+.breadcrumb {
+  background-color: var(--breadcrumb-bg) !important;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  color: var(--text-secondary) !important;
+}
+
+/* Modal */
+.modal-content {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+/* Small box widgets */
+.small-box {
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 4px var(--shadow) !important;
+}
+
+/* Info box */
+.info-box {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 4px var(--shadow) !important;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-tertiary);
+  transform: scale(1.1);
+}
+
+.theme-toggle i {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover i {
+  transform: rotate(180deg);
+}
+
+/* Animaciones suaves para transiciones */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Override para AdminLTE en modo oscuro */
+[data-theme="dark"] .skin-blue .main-header .navbar {
+  background-color: var(--navbar-bg) !important;
+}
+
+[data-theme="dark"] .skin-blue .main-header .logo {
+  background-color: var(--sidebar-bg) !important;
+}
+
+[data-theme="dark"] .content-header {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .content-header h1 {
+  color: var(--text-primary) !important;
+}
+
+/* Dropdown menus */
+.dropdown-menu {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-tertiary) !important;
+}
+
+/* Text colors */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
