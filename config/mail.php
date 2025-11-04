@@ -37,15 +37,15 @@ return [
         'smtp' => [
             'transport' => 'smtp',
             'url' => env('MAIL_URL'),
-            'host' => env('MAIL_HOST', '192.168.43.146'),
-            'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'username' => env('ricardo'),
-            'password' => env('123'),
+            'host' => env('MAIL_HOST', '192.168.1.42'), // Servidor de correo local
+            'port' => env('MAIL_PORT', 25),
+            'encryption' => env('MAIL_ENCRYPTION', null), // Sin encripción para servidor local
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
 
-             // Agrega la configuración 'stream' aquí
+             // Configuración para servidor local
             'stream' => [
                 'ssl' => [
                     'allow_self_signed' => true,
@@ -109,8 +109,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => env('MAIL_FROM_ADDRESS', 'pizzeria@tecnoweb.net'),
+        'name' => env('MAIL_FROM_NAME', 'Pizzería Bambino'),
     ],
 
     /*
