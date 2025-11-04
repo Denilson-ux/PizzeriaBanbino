@@ -54,7 +54,7 @@ function saveCliente() {
                 cliente.persona = response.data; //response.data = persona
                 cliente.id_cliente = cliente.persona.id_persona
 
-                saveUser(cliente.persona.id_persona);
+                saveUserClienteWeb(cliente.persona.id_persona);
                 
                 console.log(cliente);
             } else {
@@ -107,37 +107,69 @@ function verifyPassword() {
     return result;
 }
 
-function saveUser(idCliente) {
-    const formData = new FormData();
+/**
+ * Función especial para crear usuarios de clientes web
+ * Usa el endpoint que asigna automáticamente el rol "Cliente" por nombre
+ */
+function saveUserClienteWeb(idCliente) {
+    const userData = {
+        name: $("#usuario").val(),
+        email: $("#correo").val(),
+        password: $("#password").val(),
+        id_persona: idCliente
+    };
 
-    formData.append('name', $("#usuario").val());
-    formData.append('email', $("#correo").val());
-    formData.append('password', $("#password").val());
-    formData.append('id_rol', 4);
-    formData.append('id_persona', idCliente);
-
-    const url = rutaApiRest + "user";
+    const url = rutaApiRest + "user-cliente-web";
     $.ajax({
         url: url,
         type: "POST",
         dataType: "json",
-        data: formData,
-        contentType: false, 
-        processData: false,
+        data: userData,
         success: function (response) {
             console.log(response);
-            cliente.user = response.data; //response.data contiene el objeto user creado
+            const status = response.status;
+            if (status == 200) {
+                cliente.user = response.data; //response.data contiene el objeto user creado con rol "Cliente" asignado
 
-            localStorage.setItem('clientemall', JSON.stringify(cliente));
-            window.location.href = rutaLocal;
+                // Mostrar mensaje de éxito
+                alertify.success('¡Usuario creado exitosamente con rol de Cliente!');
+                
+                localStorage.setItem('clientemall', JSON.stringify(cliente));
+                window.location.href = rutaLocal;
+            } else {
+                alertify.alert(
+                    "Error",
+                    "Error al crear el usuario: " + (response.message || "Problema desconocido")
+                );
+            }
         },
         error: function (data, textStatus, jqXHR, error) {
-            console.log(data);
-            console.log(textStatus);
-            console.log(jqXHR);
-            console.log(error);
+            console.log("Error creando usuario:", data);
+            let errorMessage = "Error al crear el usuario.";
+            
+            if (data.responseJSON && data.responseJSON.message) {
+                errorMessage = data.responseJSON.message;
+            } else if (data.responseText) {
+                try {
+                    const errorData = JSON.parse(data.responseText);
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                    // Si no se puede parsear, usar mensaje por defecto
+                }
+            }
+            
+            alertify.alert("Error", errorMessage);
         }
     });
+}
+
+/**
+ * Función legacy - mantenida para compatibilidad pero ya no se usa
+ * La nueva función saveUserClienteWeb() la reemplaza
+ */
+function saveUser(idCliente) {
+    console.warn("saveUser() is deprecated. Use saveUserClienteWeb() instead.");
+    saveUserClienteWeb(idCliente);
 }
 
 
