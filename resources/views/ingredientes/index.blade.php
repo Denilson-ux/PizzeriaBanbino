@@ -19,138 +19,116 @@
 @section('content')
 <div class="container-fluid">
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+        <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <i class="icon fas fa-check"></i> {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <i class="icon fas fa-ban"></i> {{ session('error') }}
         </div>
     @endif
 
-    <div class="card card-primary card-outline">
+    <div class="card">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title">
-                    <i class="fas fa-seedling"></i> Lista de Ingredientes
-                </h3>
+            <h3 class="card-title">
+                <i class="fas fa-list"></i> Lista de Ingredientes
+            </h3>
+            <div class="card-tools">
                 <a href="{{ route('ingredientes.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i> Nuevo Ingrediente
+                    <i class="fas fa-plus"></i> Nuevo Ingrediente
                 </a>
             </div>
         </div>
         
-        <div class="card-body p-0">
+        <div class="card-body table-responsive p-0">
             @if(isset($ingredientes) && $ingredientes->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover mb-0">
-                        <thead class="bg-primary text-white">
-                            <tr>
-                                <th style="width: 25%">Ingrediente</th>
-                                <th style="width: 20%" class="text-center">Categoría</th>
-                                <th style="width: 15%" class="text-center">Unidad</th>
-                                <th style="width: 15%" class="text-center">Estado</th>
-                                <th style="width: 25%" class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($ingredientes as $ingrediente)
-                            <tr>
-                                <td class="align-middle">
-                                    <div>
-                                        <strong class="text-dark">{{ $ingrediente->nombre }}</strong>
-                                        @if($ingrediente->descripcion)
-                                            <br><small class="text-muted">{{ Str::limit($ingrediente->descripcion, 60) }}</small>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="text-center align-middle">
-                                    @php
-                                        $categoriaClass = [
-                                            'lacteos' => 'primary',
-                                            'carnes' => 'danger', 
-                                            'vegetales' => 'success',
-                                            'harinas' => 'warning',
-                                            'condimentos' => 'info',
-                                            'bebidas' => 'secondary',
-                                            'otros' => 'dark'
-                                        ];
-                                        $class = $categoriaClass[$ingrediente->categoria] ?? 'secondary';
-                                    @endphp
-                                    <span class="badge badge-{{ $class }} px-3 py-2">
-                                        {{ ucfirst($ingrediente->categoria ?? 'Otros') }}
-                                    </span>
-                                </td>
-                                <td class="text-center align-middle">
-                                    <span class="badge badge-outline-secondary px-3 py-2">
-                                        {{ $ingrediente->unidad_medida }}
-                                    </span>
-                                </td>
-                                <td class="text-center align-middle">
-                                    @if($ingrediente->estado == 'activo')
-                                        <span class="badge badge-success px-3 py-2">
-                                            <i class="fas fa-check-circle"></i> Activo
-                                        </span>
-                                    @else
-                                        <span class="badge badge-danger px-3 py-2">
-                                            <i class="fas fa-times-circle"></i> Inactivo
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="text-center align-middle">
-                                    <div class="btn-group" role="group" aria-label="Acciones">
-                                        <a href="{{ route('ingredientes.show', $ingrediente->id_ingrediente) }}" 
-                                           class="btn btn-info btn-sm" 
-                                           title="Ver detalles"
-                                           data-toggle="tooltip">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('ingredientes.edit', $ingrediente->id_ingrediente) }}" 
-                                           class="btn btn-warning btn-sm" 
-                                           title="Editar ingrediente"
-                                           data-toggle="tooltip">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button type="button" 
-                                                class="btn btn-danger btn-sm btn-delete" 
-                                                title="Eliminar ingrediente"
-                                                data-toggle="tooltip"
-                                                data-id="{{ $ingrediente->id_ingrediente }}"
-                                                data-nombre="{{ $ingrediente->nombre }}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Formulario oculto para eliminación -->
-                                    <form id="delete-form-{{ $ingrediente->id_ingrediente }}" 
-                                          action="{{ route('ingredientes.destroy', $ingrediente->id_ingrediente) }}" 
-                                          method="POST" 
-                                          style="display: none;">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table table-head-fixed text-nowrap">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Ingrediente</th>
+                            <th style="width: 20%;">Categoría</th>
+                            <th style="width: 15%;">Unidad</th>
+                            <th style="width: 15%;">Estado</th>
+                            <th style="width: 20%;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($ingredientes as $ingrediente)
+                        <tr>
+                            <td>
+                                <strong>{{ $ingrediente->nombre }}</strong>
+                                @if($ingrediente->descripcion)
+                                    <br><small class="text-muted">{{ Str::limit($ingrediente->descripcion, 50) }}</small>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $categoriaColors = [
+                                        'lacteos' => 'primary',
+                                        'carnes' => 'danger', 
+                                        'vegetales' => 'success',
+                                        'harinas' => 'warning',
+                                        'condimentos' => 'info',
+                                        'bebidas' => 'secondary',
+                                        'otros' => 'dark'
+                                    ];
+                                    $color = $categoriaColors[$ingrediente->categoria] ?? 'secondary';
+                                @endphp
+                                <span class="badge badge-{{ $color }}">{{ ucfirst($ingrediente->categoria ?? 'Otros') }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-light">{{ $ingrediente->unidad_medida }}</span>
+                            </td>
+                            <td>
+                                @if($ingrediente->estado == 'activo')
+                                    <span class="badge badge-success">Activo</span>
+                                @else
+                                    <span class="badge badge-danger">Inactivo</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ route('ingredientes.show', $ingrediente->id_ingrediente) }}" 
+                                       class="btn btn-info" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('ingredientes.edit', $ingrediente->id_ingrediente) }}" 
+                                       class="btn btn-warning" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-danger btn-delete" 
+                                            title="Eliminar"
+                                            data-id="{{ $ingrediente->id_ingrediente }}"
+                                            data-nombre="{{ $ingrediente->nombre }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                
+                                <form id="delete-form-{{ $ingrediente->id_ingrediente }}" 
+                                      action="{{ route('ingredientes.destroy', $ingrediente->id_ingrediente) }}" 
+                                      method="POST" 
+                                      style="display: none;">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             @else
                 <div class="text-center py-5">
                     <div class="py-4">
-                        <i class="fas fa-seedling fa-4x text-muted mb-4"></i>
-                        <h4 class="text-muted">No hay ingredientes registrados</h4>
-                        <p class="text-muted mb-4">Aún no has agregado ningún ingrediente al sistema.</p>
-                        <a href="{{ route('ingredientes.create') }}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-plus-circle"></i> Crear Primer Ingrediente
+                        <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay ingredientes registrados</h5>
+                        <p class="text-muted">Comienza agregando tu primer ingrediente</p>
+                        <a href="{{ route('ingredientes.create') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Crear Ingrediente
                         </a>
                     </div>
                 </div>
@@ -158,19 +136,15 @@
         </div>
         
         @if(isset($ingredientes) && $ingredientes->hasPages())
-        <div class="card-footer bg-light">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <small class="text-muted">
-                        Mostrando {{ $ingredientes->firstItem() }} a {{ $ingredientes->lastItem() }} 
-                        de {{ $ingredientes->total() }} ingredientes
-                    </small>
-                </div>
-                <div class="col-md-6">
-                    <div class="float-right">
-                        {{ $ingredientes->links() }}
-                    </div>
-                </div>
+        <div class="card-footer clearfix">
+            <div class="float-left">
+                <small class="text-muted">
+                    Mostrando {{ $ingredientes->firstItem() }} a {{ $ingredientes->lastItem() }} 
+                    de {{ $ingredientes->total() }} ingredientes
+                </small>
+            </div>
+            <div class="float-right">
+                {{ $ingredientes->links('pagination::bootstrap-4') }}
             </div>
         </div>
         @endif
@@ -178,15 +152,15 @@
 </div>
 
 <!-- Modal de confirmación para eliminar -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white">
                     <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -209,69 +183,76 @@
 
 @section('css')
 <style>
-    .card-primary.card-outline {
-        border-top: 3px solid #007bff;
+    .table-head-fixed thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
     }
     
-    .table th {
-        border-top: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        padding: 15px 10px;
-    }
-    
-    .table td {
-        padding: 15px 10px;
-        vertical-align: middle;
-        border-top: 1px solid #dee2e6;
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(0,123,255,.075);
+    .btn-group-sm > .btn, .btn-sm {
+        padding: .25rem .5rem;
+        font-size: .875rem;
+        border-radius: .2rem;
     }
     
     .badge {
-        font-size: 11px;
+        font-size: 0.75em;
         font-weight: 500;
     }
     
-    .btn-group .btn {
-        margin: 0 1px;
-        border-radius: 3px;
+    .card-tools {
+        margin-left: auto;
     }
     
-    .btn-sm {
-        padding: 4px 8px;
-        font-size: 12px;
+    .pagination {
+        margin: 0;
+    }
+    
+    .pagination .page-link {
+        padding: 0.375rem 0.75rem;
+        margin-left: -1px;
+        line-height: 1.25;
+        color: #007bff;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        font-size: 0.875rem;
+    }
+    
+    .pagination .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
+    .pagination .page-link:hover {
+        z-index: 2;
+        color: #0056b3;
+        text-decoration: none;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+    
+    .table td, .table th {
+        vertical-align: middle;
     }
     
     @media (max-width: 768px) {
-        .table-responsive {
-            font-size: 14px;
+        .table-responsive .table {
+            font-size: 0.875rem;
         }
         
-        .btn-group {
-            display: flex;
-            flex-direction: column;
+        .btn-group-sm > .btn {
+            padding: .125rem .25rem;
+            font-size: 0.75rem;
         }
         
-        .btn-group .btn {
-            margin: 1px 0;
-            width: 100%;
+        .card-tools {
+            margin-top: 0.5rem;
+            margin-left: 0;
         }
-        
-        .card-header h3 {
-            font-size: 1.1rem;
-        }
-    }
-    
-    .alert {
-        border: none;
-        border-radius: 6px;
-    }
-    
-    .card {
-        box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
     }
 </style>
 @endsection
@@ -280,7 +261,7 @@
 <script>
 $(document).ready(function() {
     // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[title]').tooltip();
     
     // Manejar clic en botón eliminar
     $('.btn-delete').on('click', function() {
