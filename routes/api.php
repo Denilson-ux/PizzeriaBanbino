@@ -108,6 +108,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     Route::get('user-eliminados', [UserController::class, 'eliminados']);
     Route::get('user-restaurar/{user}', [UserController::class, 'restaurar']);
     Route::post('user-inicio-sesion', [UserController::class, 'inicioSesion']);
+    # Ruta especial para registro de clientes web con rol automático
+    Route::post('user-cliente-web', [UserController::class, 'storeClienteWeb']);
 
     #nota venta
     Route::apiResource('nota-venta', NotaVentaController::class);
