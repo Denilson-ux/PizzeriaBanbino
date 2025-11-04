@@ -5,6 +5,9 @@
 @section('adminlte_css')
     @stack('css')
     @yield('css')
+    
+    {{-- Modo Oscuro/Claro - CSS Simple (Sin npm) --}}
+    <link rel="stylesheet" href="{{ asset('css/simple-theme-toggle.css') }}">
 @stop
 
 @section('classes_body', $layoutHelper->makeBodyClasses())
@@ -54,4 +57,7 @@
 @section('adminlte_js')
     @stack('js')
     @yield('js')
+    
+    {{-- Modo Oscuro/Claro - JavaScript Simple (Sin npm) --}}
+    <script src="{{ asset('js/simple-theme-toggle.js') }}"></script>
 @stop
