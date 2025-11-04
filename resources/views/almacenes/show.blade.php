@@ -64,12 +64,10 @@
                                 <th>Ingrediente</th>
                                 <th>Categoría</th>
                                 <th>Stock</th>
-                                <th>Mín/Máx</th>
                                 <th>Unidad</th>
                                 <th>Costo</th>
                                 <th>Valor</th>
                                 <th>Estado</th>
-                                <th>Ubicación</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -78,12 +76,10 @@
                                 <td><strong>{{ $item->ingrediente->nombre }}</strong></td>
                                 <td><span class="badge badge-secondary">{{ $item->ingrediente->categoria ?? 'Sin categoría' }}</span></td>
                                 <td><span class="font-weight-bold {{ $item->stock_actual <= 0 ? 'text-danger' : ($item->stock_bajo ? 'text-warning' : 'text-success') }}">{{ number_format($item->stock_actual,2) }}</span></td>
-                                <td><small>Min: {{ number_format($item->stock_minimo,2) }}<br>Máx: {{ number_format($item->stock_maximo,2) }}</small></td>
                                 <td>{{ $item->unidad_medida }}</td>
                                 <td>{{ formatCurrency($item->costo_unitario_promedio,2) }}</td>
                                 <td>{{ formatCurrency($item->valor_total_stock,2) }}</td>
                                 <td><span class="badge badge-{{ $item->estado=='activo'?'success':'danger' }}">{{ ucfirst($item->estado) }}</span></td>
-                                <td>{{ $item->ubicacion_fisica ?? 'No especificada' }}</td>
                             </tr>
                             @endforeach
                         </tbody>
