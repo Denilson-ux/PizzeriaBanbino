@@ -27,4 +27,9 @@ class Cliente extends Model
     {
         return $this->hasMany(Pedido::class, 'id_cliente');
     }
+
+    public function persona()
+    {
+        return $this->belongsTo(Persona::class, 'id_cliente', 'id_persona');
+    }
 }
