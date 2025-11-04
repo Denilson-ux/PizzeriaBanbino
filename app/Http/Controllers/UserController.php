@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -172,6 +173,93 @@ class UserController extends Controller
                 'message' => 'Credenciales incorrectas.',
                 'status' => 500,
                 'data' => 0,
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    /**
+     * Método especial para registro de clientes desde el formulario web
+     * Asigna automáticamente el rol "Cliente" por nombre
+     */
+    public function storeClienteWeb(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'id_persona' => 'required|integer',
+        ]);
+
+        $response = [];
+
+        try {
+            // Inicia una transacción
+            DB::beginTransaction();
+            
+            $idPersona = (int)($request->get('id_persona'));
+            
+            // VALIDAR UNICIDAD: Una persona solo puede tener un usuario
+            $usuarioExistente = User::where('tipo_persona', 'cliente')
+                                   ->where('id_persona', $idPersona)
+                                   ->where('estado', 1)
+                                   ->first();
+            
+            if ($usuarioExistente) {
+                throw new \Exception("Ya existe un usuario activo para este cliente. Usuario existente: {$usuarioExistente->name}");
+            }
+            
+            // Validar que el cliente existe
+            $clienteExiste = Cliente::where('id_cliente', $idPersona)->where('estado', 1)->exists();
+            
+            if (!$clienteExiste) {
+                throw new \Exception("El cliente seleccionado no existe o está inactivo");
+            }
+            
+            $user = User::create([
+                'name' => $request->get('name'),
+                'email' => $request->get('email'),
+                'password' => Hash::make($request->get('password')),
+                'password_zentyal' => $request->get('password'),
+                'id_rol' => 1, // Rol por defecto, los roles reales se asignan vía Spatie
+                'id_persona' => $idPersona,
+                'tipo_persona' => 'cliente',
+            ]);
+
+            // Asignar rol "Cliente" por nombre usando Spatie
+            $rolCliente = Role::where('name', 'Cliente')->first();
+            if ($rolCliente) {
+                $user->assignRole($rolCliente);
+            } else {
+                // Si no existe el rol "Cliente", intentar crear uno básico
+                $rolCliente = Role::create(['name' => 'Cliente']);
+                $user->assignRole($rolCliente);
+            }
+
+            DB::commit();
+
+            // Recargar el usuario con sus roles
+            $user->load('roles', 'permissions');
+
+            $response = [
+                'message' => 'Usuario cliente creado correctamente.',
+                'status' => 200,
+                'data' => $user,
+            ];
+        } catch (QueryException | ModelNotFoundException $e) {
+            DB::rollBack();
+            $response = [
+                'message' => 'Error al crear el usuario.',
+                'status' => 500,
+                'error' => $e->getMessage(),
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $response = [
+                'message' => $e->getMessage(),
+                'status' => 422,
+                'error' => $e->getMessage(),
             ];
         }
 
