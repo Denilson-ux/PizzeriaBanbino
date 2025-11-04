@@ -71,6 +71,11 @@ class MenuController extends Controller
         return new MenuCollection($menus);
     }
 
+    public function show(Menu $menu)
+    {
+        return new MenuResource($menu);
+    }
+
     public function store(StoreMenuRequest $request)
     {
         try {
@@ -154,6 +159,120 @@ class MenuController extends Controller
                 'status'  => 500,
                 'error'   => $e->getMessage(),
             ];
+        }
+    }
+
+    public function update(UpdateMenuRequest $request, Menu $menu)
+    {
+        $response = [];
+
+        try {
+            if (!$menu) {
+                $response = [
+                    'message' => 'Menú no encontrado.',
+                    'status' => 404,
+                ];
+            } else {
+                DB::beginTransaction();
+
+                $datos = $request->json()->all();
+
+                $menu->update([
+                    'nombre' => $datos['nombre'],
+                    'descripcion' => $datos['descripcion'],
+                    'fecha' => $datos['fecha'],
+                ]);
+
+                // Eliminar relaciones existentes
+                MenuItemMenu::where('id_menu', $menu->id_menu)->delete();
+
+                // Crear nuevas relaciones
+                $items = $datos['items_menu'];
+                foreach ($items as $item) {
+                    MenuItemMenu::create([
+                        'id_menu'    => $menu->id_menu,
+                        'id_item_menu' => $item['id_item_menu'],
+                        'cantidad'   => $item['cantidad'],
+                    ]);
+                }
+
+                DB::commit();
+
+                $response = [
+                    'message' => 'Registro actualizado correctamente.',
+                    'status' => 200,
+                    'data' => $menu,
+                ];
+            }
+        } catch (QueryException | ModelNotFoundException $e) {
+            DB::rollBack();
+            $response = [
+                'message' => 'Error al actualizar el registro.',
+                'status' => 500,
+                'error' => $e->getMessage(),
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $response = [
+                'message' => 'Error general al actualizar el registro.',
+                'status' => 500,
+                'error' => $e->getMessage(),
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function destroy(Menu $menu)
+    {
+        $response = [];
+        try {
+            $menu->update(['estado' => 0]);
+            $response = [
+                'message' => 'Registro eliminado correctamente.',
+                'status' => 200,
+                'data' => $menu
+            ];
+        } catch (QueryException | ModelNotFoundException $e) {
+            $response = [
+                'message' => 'Error en la BD al eliminar el registro.',
+                'status' => 500,
+                'error' => $e->getMessage()
+            ];
+        } catch (\Exception $e) {
+            $response = [
+                'message' => 'Error general al eliminar el registro.',
+                'status' => 500,
+                'error' => $e->getMessage()
+            ];
+        }
+        return response()->json($response);
+    }
+
+    public function eliminados()
+    {
+        $menus = Menu::where('estado', 0)
+                    ->with('itemMenus')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+        return new MenuCollection($menus);
+    }
+
+    public function restaurar(Menu $menu)
+    {
+        try {
+            $menu->update(['estado' => 1]);
+            return response()->json([
+                'message' => 'Se restauró correctamente.', 
+                'status' => 200, 
+                'data' => $menu
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al restaurar.', 
+                'status' => 500, 
+                'error' => $e->getMessage()
+            ]);
         }
     }
 }
