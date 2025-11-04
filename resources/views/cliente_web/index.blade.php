@@ -141,56 +141,66 @@
 {{-- end modal carrito --}}
 
 
-<!-- modal perfil-->
-<div class="modal fade" id="modal-perfil" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<!-- modal perfil - APLICANDO CLASE PROFILE-MODAL -->
+<div class="modal fade profile-modal" id="modal-perfil" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="perfilModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        {{-- <h5 class="modal-title" id="staticBackdropLabel">Tu información</h5> --}}
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="perfilModalLabel">
+          <i class="fas fa-user-circle"></i> Tu Información Personal
+        </h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="modal-body">
           <div class="row">
               <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Perfil de Usuario</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row mb-3">
-                                    <!-- Columna de la Foto de Perfil -->
-                                    <div class="col-md-4 text-center">
-                                        <img src="https://via.placeholder.com/150" alt="Foto de Perfil" id="preview" class="img-fluid rounded-circle">
-                                        <input type="file" class="form-control mt-2" accept="image/*" onchange="previewImage(event)" />
-                                    </div>
-            
-                                    <!-- Columna de la Información del Usuario -->
-                                    <div class="col-md-8">
-                                        <form>
-                                            <h5>Información Personal</h5>
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="nombre" class="form-label">Nombre:</label>
-                                                    <input type="text" class="form-control" id="nombre" value="John Doe">
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="email" class="form-label">Email:</label>
-                                                    <input type="email" class="form-control" id="email" value="john@example.com">
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="telefono" class="form-label">Teléfono:</label>
-                                                    <input type="tel" class="form-control" id="telefono" value="(123) 456-7890">
-                                                </div>
-                                            </div>
-                                            <button type="submit" class="btn btn-warning">
-                                              <i class="fas fa-save"></i> 
-                                              Guardar Cambios
-                                            </button>
-                                        </form>
-                                    </div>
+                        <div class="row mb-4">
+                            <!-- Columna de la Foto de Perfil -->
+                            <div class="col-md-4 text-center">
+                                <div class="profile-image-container mb-3">
+                                    <img src="https://via.placeholder.com/150/ff6b35/ffffff?text=Usuario" alt="Foto de Perfil" id="preview" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #ff6b35;">
                                 </div>
+                                <label for="profile-image" class="form-label">Cambiar foto de perfil:</label>
+                                <input type="file" class="form-control" id="profile-image" accept="image/*" onchange="previewImage(event)" />
+                            </div>
+    
+                            <!-- Columna de la Información del Usuario -->
+                            <div class="col-md-8">
+                                <form>
+                                    <h5 class="mb-4"><i class="fas fa-info-circle"></i> Información Personal</h5>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nombre" class="form-label">Nombre Completo:</label>
+                                            <input type="text" class="form-control" id="nombre" value="Pepito" placeholder="Ingresa tu nombre completo">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="email" class="form-label">Correo Electrónico:</label>
+                                            <input type="email" class="form-control" id="email" value="pepito@gmail.com" placeholder="tu@email.com">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="telefono" class="form-label">Número de Teléfono:</label>
+                                            <input type="tel" class="form-control" id="telefono" value="38492919" placeholder="Ej: 70123456">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="direccion" class="form-label">Dirección:</label>
+                                            <input type="text" class="form-control" id="direccion" placeholder="Tu dirección">
+                                        </div>
+                                        <div class="col-12 mb-4">
+                                            <label for="notas" class="form-label">Notas adicionales:</label>
+                                            <textarea class="form-control" id="notas" rows="3" placeholder="Alguna información adicional..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-warning">
+                                          <i class="fas fa-save"></i> 
+                                          Guardar Cambios
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -199,9 +209,9 @@
           </div>
       </div>
       <div class="modal-footer">
-          <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               <i class="fas fa-door-open"></i>    
-              Close
+              Cerrar
           </button>
       </div>
     </div>
@@ -244,6 +254,20 @@
 </div>
 {{-- end boton flotante --}}
 
+<script>
+// Función para previsualizar la imagen de perfil
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+
 @endsection
 
 @section('clienteweb-css')
@@ -260,6 +284,32 @@
       background-size: cover;
       background-position: center;
       color: #fff; /* Color del texto */
+    }
+    
+    /* Estilos adicionales para el modal de perfil */
+    .profile-image-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .profile-image-container::after {
+        content: '\f030'; /* Icono de cámara de Font Awesome */
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: #ff6b35;
+        color: white;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        border: 3px solid white;
+        cursor: pointer;
     }
   </style>
 @endsection
