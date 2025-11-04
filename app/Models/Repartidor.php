@@ -27,4 +27,9 @@ class Repartidor extends Model
     {
         return $this->hasMany(Vehiculo::class, 'id_repartidor');
     }
+
+    public function persona()
+    {
+        return $this->belongsTo(Persona::class, 'id_repartidor', 'id_persona');
+    }
 }
