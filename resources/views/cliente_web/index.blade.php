@@ -163,7 +163,7 @@
 
     
                             <!-- Columna de la Información del Usuario -->
-                            <div class="col-md-8">
+                            <div class="text-align-center">
                                 <form>
                                     <h5 class="mb-4"><i class="fas fa-info-circle"></i> Información Personal</h5>
                                     <div class="row">
@@ -187,12 +187,6 @@
                                             <label for="notas" class="form-label">Notas adicionales:</label>
                                             <textarea class="form-control" id="notas" rows="3" placeholder="Alguna información adicional..."></textarea>
                                         </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <button type="submit" class="btn btn-warning">
-                                          <i class="fas fa-save"></i> 
-                                          Guardar Cambios
-                                        </button>
                                     </div>
                                 </form>
                             </div>
