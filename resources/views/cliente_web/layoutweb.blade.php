@@ -34,6 +34,101 @@
 
     @yield('clienteweb-css')
 
+    <!-- Custom styles for profile modal -->
+    <style>
+        /* Perfil Modal - Mejora de visibilidad del texto */
+        .profile-modal .modal-content {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-modal .modal-header {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+        
+        .profile-modal .modal-header .close {
+            color: white;
+            opacity: 1;
+            font-size: 1.5rem;
+        }
+        
+        .profile-modal .modal-header .close:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .profile-modal .modal-body {
+            background: white;
+            color: #333;
+            padding: 2rem;
+        }
+        
+        .profile-modal .form-control {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e9ecef;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .profile-modal .form-control:focus {
+            background: white;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+            color: #333;
+        }
+        
+        .profile-modal .form-control::placeholder {
+            color: #6c757d;
+            opacity: 1;
+        }
+        
+        .profile-modal .btn-warning {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 30px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-modal .btn-warning:hover {
+            background: linear-gradient(135deg, #e55a2e, #e8851a);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        .profile-modal .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        
+        /* Asegurar que las etiquetas sean legibles */
+        .profile-modal label {
+            color: #333 !important;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        /* Mejorar el input de archivo */
+        .profile-modal input[type="file"] {
+            background: white;
+            border: 2px dashed #ff6b35;
+            padding: 15px;
+            border-radius: 10px;
+            color: #333;
+        }
+        
+        .profile-modal input[type="file"]:hover {
+            border-color: #e55a2e;
+            background: #fff5f3;
+        }
+    </style>
+
 </head>
 
 <body>
