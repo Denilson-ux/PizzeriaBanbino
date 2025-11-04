@@ -86,7 +86,12 @@
                     </table>
                 </div>
                 @if($inventario->hasPages())
-                <div class="d-flex justify-content-center mt-3">{{ $inventario->links() }}</div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-muted">Mostrando {{ $inventario->firstItem() }} a {{ $inventario->lastItem() }} de {{ $inventario->total() }} resultados</small>
+                    <div class="mb-0">
+                        {{ $inventario->onEachSide(1)->links('pagination::bootstrap-4') }}
+                    </div>
+                </div>
                 @endif
                 @else
                     <div class="text-center text-muted py-4">
@@ -133,4 +138,12 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('css')
+<style>
+.pagination { margin: 0; }
+.pagination .page-link { padding: 0.375rem 0.75rem; font-size: 0.875rem; }
+.pagination .page-item.active .page-link { color:#fff; }
+</style>
 @endsection
