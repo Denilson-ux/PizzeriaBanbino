@@ -67,28 +67,34 @@ class NotaVentaController extends Controller
 
     public function getComprobantePdf($id)
     {
-        // URL de la página cuyo HTML deseas convertir a PDF
-        $url = asset('/nota-venta-comprobante/' . $id);
+        // Cargar datos como en getComprobante() sin hacer HTTP externo
+        $venta = NotaVenta::findOrFail($id)->load('cliente', 'empleado');
+        $venta['detalle_venta'] = DetalleVenta::where('id_nota_venta', $venta['id_nota_venta'])->get();
+        $venta['persona_cliente'] = Persona::findOrFail($venta['cliente']['id_cliente']);
+        $venta['persona_empleado'] = Persona::findOrFail($venta['empleado']['id_empleado']);
 
-        // Obtener el contenido HTML de la página
-        $html = file_get_contents($url);
+        $ventaDetalle = [];
+        foreach ($venta['detalle_venta'] as $i => $detalle) {
+            $detalle['item_menu'] = ItemMenu::findOrFail($detalle['id_item_menu'])->load('tipoMenu');
+            $ventaDetalle[$i] = $detalle;
+        }
+        $venta['detalle_venta_item'] = $ventaDetalle;
 
-        // Opciones de configuración de Dompdf
+        // Render de la vista a HTML directamente
+        $html = view('pizzeria.nota_venta.comprobante_venta', ['venta' => $venta])->render();
+
+        // Opciones Dompdf
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true); // permitir assets remotos si los hay
 
-        // Instancia de Dompdf con las opciones
         $dompdf = new Dompdf($options);
-
-        // Cargar el HTML
         $dompdf->loadHtml($html);
-
-        // Renderizar el PDF
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        // Enviar el PDF al navegador
-        $dompdf->stream("documento.pdf", array("Attachment" => false));
+        return $dompdf->stream("comprobante-venta-{$id}.pdf", ['Attachment' => false]);
     }
 
     public function getComprobante($id)
