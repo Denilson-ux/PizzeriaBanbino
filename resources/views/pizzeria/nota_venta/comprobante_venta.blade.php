@@ -36,8 +36,7 @@
             <h6 id="" class="centrar-tex texto-mayuscula">Mi pizzeria</h6>
             <p id="direccion-restaurante" class="texto-mayuscula datos-venta centrar-tex">Montero</p>
             <div class="salto-linea">
-                <strong class="datos-venta">Teléfono:</strong>
-                <span id="telefono-restaurante" class="datos-venta">70054805</span><br>
+            
                 <strong class="datos-venta">Fecha: </strong>
                 <span id="fecha" class="datos-venta">{{ optional($venta['created_at'])->timezone(config('app.timezone'))->format('Y-m-d H:i:s') ?? now()->timezone(config('app.timezone'))->format('Y-m-d H:i:s') }}</span><br>
             </div>
@@ -47,8 +46,7 @@
             <div class="salto-linea">
                 <strong class="datos-venta">Nombre: </strong>
                 <span id="nombre-cliente" class="datos-venta">{{$venta['persona_cliente']['nombre']." ".$venta['persona_cliente']['paterno']}}</span><br>
-                <strong class="datos-venta">CI: </strong>
-                <span id="ci-cliente" class="datos-venta">{{$venta['persona_cliente']['ci']}}</span><br>
+                
                 <strong class="datos-venta">Teléfono: </strong>
                 <span id="telefono-cliente" class="datos-venta">{{$venta['persona_cliente']['telefono']}}</span>
             </div>
