@@ -1,0 +1,225 @@
+/* 
+ * Modo Oscuro/Claro Simple - Solo Bootstrap
+ * No requiere compilación npm - Funciona directamente
+ */
+
+/* Variables para modo claro (por defecto) */
+:root {
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #212529;
+  --bs-card-bg: #ffffff;
+  --bs-border-color: #dee2e6;
+  --bs-sidebar-bg: #343a40;
+  --bs-sidebar-color: #ffffff;
+  --bs-navbar-bg: #ffffff;
+  --bs-navbar-color: #212529;
+  --bs-input-bg: #ffffff;
+  --bs-input-border: #ced4da;
+  --bs-table-stripe-bg: #f8f9fa;
+}
+
+/* Variables para modo oscuro */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #1a1a1a !important;
+  --bs-body-color: #ffffff !important;
+  --bs-card-bg: #2d2d30 !important;
+  --bs-border-color: #404040 !important;
+  --bs-sidebar-bg: #1e1e1e !important;
+  --bs-sidebar-color: #ffffff !important;
+  --bs-navbar-bg: #2d2d30 !important;
+  --bs-navbar-color: #ffffff !important;
+  --bs-input-bg: #3c3c3f !important;
+  --bs-input-border: #555555 !important;
+  --bs-table-stripe-bg: #3c3c3f !important;
+}
+
+/* Aplicar variables a elementos */
+body {
+  background-color: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* AdminLTE - Sidebar */
+.main-sidebar,
+.sidebar {
+  background-color: var(--bs-sidebar-bg) !important;
+}
+
+.main-sidebar .nav-link,
+.sidebar .nav-link {
+  color: var(--bs-sidebar-color) !important;
+}
+
+.main-sidebar .nav-link:hover,
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* AdminLTE - Navbar */
+.main-header.navbar,
+.navbar {
+  background-color: var(--bs-navbar-bg) !important;
+  border-bottom: 1px solid var(--bs-border-color) !important;
+}
+
+.navbar .nav-link {
+  color: var(--bs-navbar-color) !important;
+}
+
+/* AdminLTE - Content */
+.content-wrapper {
+  background-color: var(--bs-body-bg) !important;
+}
+
+/* Bootstrap Cards */
+.card {
+  background-color: var(--bs-card-bg) !important;
+  border: 1px solid var(--bs-border-color) !important;
+}
+
+.card-header {
+  background-color: var(--bs-card-bg) !important;
+  border-bottom: 1px solid var(--bs-border-color) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.card-body {
+  color: var(--bs-body-color) !important;
+}
+
+/* Bootstrap Tables */
+.table {
+  color: var(--bs-body-color) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--bs-table-stripe-bg) !important;
+}
+
+.table th,
+.table td {
+  border-color: var(--bs-border-color) !important;
+}
+
+/* Bootstrap Forms */
+.form-control {
+  background-color: var(--bs-input-bg) !important;
+  border-color: var(--bs-input-border) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.form-control:focus {
+  background-color: var(--bs-input-bg) !important;
+  border-color: #0d6efd !important;
+  color: var(--bs-body-color) !important;
+}
+
+/* Bootstrap Buttons */
+.btn-outline-secondary {
+  color: var(--bs-body-color) !important;
+  border-color: var(--bs-border-color) !important;
+}
+
+.btn-outline-secondary:hover {
+  color: #ffffff !important;
+  background-color: #6c757d !important;
+}
+
+/* Bootstrap Modals */
+.modal-content {
+  background-color: var(--bs-card-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--bs-border-color) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--bs-border-color) !important;
+}
+
+/* Bootstrap Dropdowns */
+.dropdown-menu {
+  background-color: var(--bs-card-bg) !important;
+  border: 1px solid var(--bs-border-color) !important;
+}
+
+.dropdown-item {
+  color: var(--bs-body-color) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bs-table-stripe-bg) !important;
+}
+
+/* Botón de cambio de tema */
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--bs-body-color);
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--bs-table-stripe-bg);
+  transform: scale(1.1);
+}
+
+.theme-toggle-btn i {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover i {
+  transform: rotate(180deg);
+}
+
+/* Breadcrumbs */
+.breadcrumb {
+  background-color: var(--bs-table-stripe-bg) !important;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  color: var(--bs-body-color) !important;
+}
+
+/* AdminLTE Info Boxes */
+.info-box {
+  background-color: var(--bs-card-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.small-box {
+  color: #ffffff !important; /* Mantener texto blanco en small-box */
+}
+
+/* Text utilities override */
+[data-bs-theme="dark"] .text-dark {
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .text-muted {
+  color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] .bg-white {
+  background-color: var(--bs-card-bg) !important;
+}
+
+[data-bs-theme="dark"] .bg-light {
+  background-color: var(--bs-table-stripe-bg) !important;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
