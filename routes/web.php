@@ -7,6 +7,7 @@ use App\Http\Controllers\ClienteWebController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\CorreoController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\ItemMenuController;
 use App\Http\Controllers\MenuController;
@@ -108,6 +109,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('api/compras/productos', [CompraController::class, 'getIngredientes'])->name('compras.get_productos');
     Route::get('api/compras/almacenes', [CompraController::class, 'getAlmacenes'])->name('compras.get_almacenes');
     Route::get('api/compras/stock-por-almacen', [CompraController::class, 'getStockPorAlmacen'])->name('compras.stock_por_almacen');
+
+    /* Sistema de Correos para Reportes */
+    Route::get('correos/reportes', [EmailController::class, 'mostrarFormulario'])->name('email.formulario');
+    Route::post('correos/enviar-reporte', [EmailController::class, 'enviarReportePedidos'])->name('email.enviar-reporte');
+    Route::get('correos/preview-reporte', [EmailController::class, 'previewReporte'])->name('email.preview-reporte');
+    Route::get('correos/test-conexion', [EmailController::class, 'testConexion'])->name('email.test-conexion');
 
     // Recetas (incluidas directamente)
     require __DIR__.'/recetas.php';
