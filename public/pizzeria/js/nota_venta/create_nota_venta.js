@@ -63,7 +63,7 @@ $(document).on("click", ".agregar-disponible", function(e) {
 
             localStorage.setItem('carritoVenta', JSON.stringify(itemsCarrito));
         } else {
-            alerta("Item agotado", "Item agotado :c, no hay más del plato", 1500);
+            alerta("Item agotado", "Item agotado :c, no hay más pizzas", 1500);
         }
     }
 });
@@ -105,7 +105,7 @@ $(document).on("click", ".btn-plus-agregado", function(e) {
         
         localStorage.setItem('carritoVenta', JSON.stringify(itemsCarrito));
     } else {
-        alerta("Item agotado", "No hay mas de la cantidad actual en el restaurante", 1500);
+        alerta("Item agotado", "No hay más pizzas de la cantidad actual en el restaurante", 1500);
     }
 });
 
@@ -145,7 +145,7 @@ $(document).on("input", ".input-cantidad", function(e) {
         inputCantidad.val(1);
     } else {
         if (!object.verificar) {
-            alerta("Item agotado", "No hay mas de la cantidad actual en el restaurante", 1500);
+            alerta("Item agotado", "No hay más pizzas de la cantidad actual en el restaurante", 1500);
             inputCantidad.val(object.cantidad);
         } else {
             itemAddCantidad.cantidad = cantidad;
@@ -283,7 +283,6 @@ function cargarSelectClientes(array, id = 0) {
     select.select2({
         width: '100%', 
         theme: "classic",
-        // maximumSelectionLength: 1
     });
 }
 
@@ -470,12 +469,3 @@ function alerta(titulo, mesaje, duracion) {
         alerta.close();
     }, duracion);
 }
-
-
-
-//evento select
-// $('#id-cliente').on('select2:select', function (e) {
-//     const data = e.params.data;
-//     idCliente = parseInt(data.id);
-//     console.log(idCliente);
-// });
