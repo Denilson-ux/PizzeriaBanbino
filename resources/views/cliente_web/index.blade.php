@@ -160,13 +160,7 @@
                     <div class="col-12">
                         <div class="row mb-4">
                             <!-- Columna de la Foto de Perfil -->
-                            <div class="col-md-4 text-center">
-                                <div class="profile-image-container mb-3">
-                                    <img src="https://via.placeholder.com/150/ff6b35/ffffff?text=Usuario" alt="Foto de Perfil" id="preview" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #ff6b35;">
-                                </div>
-                                <label for="profile-image" class="form-label">Cambiar foto de perfil:</label>
-                                <input type="file" class="form-control" id="profile-image" accept="image/*" onchange="previewImage(event)" />
-                            </div>
+
     
                             <!-- Columna de la Información del Usuario -->
                             <div class="col-md-8">
