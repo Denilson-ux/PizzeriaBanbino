@@ -348,6 +348,10 @@
         </p>
       </div>
     </div>
+    
+    {{-- Contador de visitas --}}
+    @include('components.page-visit-counter')
+    
   </footer>
   <!-- footer section -->
 </div>
