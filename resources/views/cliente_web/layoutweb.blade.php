@@ -276,6 +276,9 @@
     </div>
   </section>
   <!-- end comentarios client section -->
+  
+  {{-- Contador de visitas integrado antes del footer --}}
+  @include('components.page-visit-counter')
 
   <!-- footer section -->
   <footer class="footer_section">
@@ -348,10 +351,6 @@
         </p>
       </div>
     </div>
-    
-    {{-- Contador de visitas --}}
-    @include('components.page-visit-counter')
-    
   </footer>
   <!-- footer section -->
 </div>
