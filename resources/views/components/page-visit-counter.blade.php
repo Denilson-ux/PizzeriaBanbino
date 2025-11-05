@@ -1,4 +1,4 @@
-{{-- Componente contador de visitas integrado al diseño de la pizzería --}}
+{{-- Componente contador de visitas - Diseño elegante integrado --}}
 @php
     use App\Models\PageVisit;
     $currentRoute = request()->route()?->getName() ?? 'home';
@@ -7,36 +7,53 @@
     $progressPercentage = min(100, ($visitCount / $maxVisits) * 100);
 @endphp
 
-<div class="visit-counter-section">
+<section class="visit-stats-section">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="visit-counter-card">
-                    <div class="row align-items-center">
-                        <div class="col-md-6 text-center text-md-start">
-                            <div class="visit-info">
-                                <div class="visit-icon">
-                                    <i class="fas fa-eye"></i>
+            <div class="col-lg-10">
+                <div class="stats-wrapper">
+                    <div class="row align-items-center g-0">
+                        <!-- Icono y contador principal -->
+                        <div class="col-md-5">
+                            <div class="visit-main-info">
+                                <div class="visit-icon-container">
+                                    <div class="visit-icon-bg">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="visit-pulse"></div>
                                 </div>
-                                <div class="visit-details">
-                                    <h6 class="visit-label">Visitas a esta página</h6>
-                                    <div class="visit-count">{{ number_format($visitCount) }}</div>
+                                <div class="visit-text">
+                                    <h4 class="visit-title">Estadísticas de Visitas</h4>
+                                    <div class="visit-number">{{ number_format($visitCount) }}</div>
+                                    <p class="visit-subtitle">visitas a esta página</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <div class="popularity-section">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="popularity-label">Popularidad relativa</span>
-                                    <span class="popularity-percentage">{{ number_format($progressPercentage, 1) }}%</span>
+                        <!-- Separador vertical -->
+                        <div class="col-md-2 text-center d-none d-md-block">
+                            <div class="vertical-separator"></div>
+                        </div>
+                        
+                        <!-- Barra de progreso y detalles -->
+                        <div class="col-md-5">
+                            <div class="progress-info">
+                                <div class="progress-header">
+                                    <span class="progress-label">Popularidad</span>
+                                    <span class="progress-value">{{ number_format($progressPercentage, 1) }}%</span>
                                 </div>
-                                <div class="custom-progress">
-                                    <div class="progress-fill" style="width: {{ $progressPercentage }}%"></div>
+                                
+                                <div class="modern-progress">
+                                    <div class="progress-track">
+                                        <div class="progress-fill" style="width: {{ $progressPercentage }}%">
+                                            <div class="progress-glow"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="update-time mt-2">
-                                    <i class="fas fa-clock me-1"></i>
-                                    Actualizado: {{ now()->format('d/m/Y H:i') }}
+                                
+                                <div class="last-updated">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Actualizado: {{ now()->format('H:i') }} hrs</span>
                                 </div>
                             </div>
                         </div>
@@ -45,222 +62,329 @@
             </div>
         </div>
     </div>
-</div>
+    
+    <!-- Decorative elements -->
+    <div class="decoration-left"></div>
+    <div class="decoration-right"></div>
+</section>
 
-{{-- Estilos CSS integrados al diseño del sitio --}}
 <style>
-.visit-counter-section {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    padding: 25px 0;
-    border-top: 3px solid #f7931e;
+/* Sección principal del contador */
+.visit-stats-section {
+    background: linear-gradient(135deg, #1a252f 0%, #2c3e50 50%, #34495e 100%);
+    padding: 30px 0;
     position: relative;
     overflow: hidden;
+    border-top: 2px solid #f7931e;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
 }
 
-.visit-counter-section::before {
-    content: '';
+/* Elementos decorativos */
+.decoration-left,
+.decoration-right {
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(247,147,30,0.1)"/></svg>') repeat;
-    opacity: 0.3;
-    animation: float 20s ease-in-out infinite;
+    width: 100px;
+    height: 100%;
+    opacity: 0.1;
+    background: linear-gradient(45deg, #f7931e, #ff6b35);
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+.decoration-left {
+    left: -50px;
+    transform: skewX(-15deg);
 }
 
-.visit-counter-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+.decoration-right {
+    right: -50px;
+    transform: skewX(15deg);
+}
+
+/* Contenedor principal de estadísticas */
+.stats-wrapper {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(247, 147, 30, 0.2);
-    border-radius: 15px;
-    padding: 20px 25px;
+    border-radius: 20px;
+    padding: 25px 30px;
     position: relative;
-    z-index: 2;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.visit-counter-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(247, 147, 30, 0.2);
+.stats-wrapper:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 15px 40px rgba(247, 147, 30, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     border-color: rgba(247, 147, 30, 0.4);
 }
 
-.visit-info {
+/* Información principal de visitas */
+.visit-main-info {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
+    padding: 10px 0;
 }
 
-.visit-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #f7931e, #ff6b35);
+/* Contenedor del icono */
+.visit-icon-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.visit-icon-bg {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #f7931e 0%, #e74c3c 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 4px 15px rgba(247, 147, 30, 0.3);
+    position: relative;
+    z-index: 2;
+    box-shadow: 
+        0 10px 20px rgba(247, 147, 30, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
 }
 
-.visit-icon i {
+.visit-icon-bg i {
     color: white;
-    font-size: 20px;
+    font-size: 24px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
-.visit-details {
+/* Efecto de pulso */
+.visit-pulse {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 70px;
+    height: 70px;
+    border: 2px solid #f7931e;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    opacity: 0.6;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.3;
+    }
+    100% {
+        transform: scale(1.2);
+        opacity: 0;
+    }
+}
+
+/* Texto de visitas */
+.visit-text {
     flex: 1;
 }
 
-.visit-label {
+.visit-title {
     color: #ecf0f1;
-    font-size: 14px;
-    margin: 0 0 5px 0;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.visit-count {
-    color: #f7931e;
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.popularity-section {
-    padding-left: 20px;
-}
-
-.popularity-label {
-    color: #bdc3c7;
-    font-size: 13px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.popularity-percentage {
-    color: #f7931e;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 600;
+    margin: 0 0 8px 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
-.custom-progress {
-    height: 8px;
-    background: rgba(44, 62, 80, 0.6);
+.visit-number {
+    color: #f7931e;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 5px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #f7931e, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.visit-subtitle {
+    color: #bdc3c7;
+    font-size: 14px;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* Separador vertical */
+.vertical-separator {
+    width: 2px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, #f7931e, transparent);
+    margin: 0 auto;
+    opacity: 0.6;
+}
+
+/* Información de progreso */
+.progress-info {
+    padding: 10px 0;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.progress-label {
+    color: #ecf0f1;
+    font-size: 16px;
+    font-weight: 600;
+    flex: 1;
+}
+
+.progress-value {
+    color: #f7931e;
+    font-size: 18px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Barra de progreso moderna */
+.modern-progress {
+    margin: 15px 0;
+}
+
+.progress-track {
+    height: 10px;
+    background: rgba(44, 62, 80, 0.8);
     border-radius: 10px;
     overflow: hidden;
     position: relative;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #f7931e, #ff6b35, #e74c3c);
+    background: linear-gradient(90deg, #f7931e 0%, #e74c3c 50%, #ff6b35 100%);
     border-radius: 10px;
-    transition: width 1.5s ease-out;
+    transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
 }
 
-.progress-fill::after {
-    content: '';
+.progress-glow {
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: shimmer 2s infinite;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent
+    );
+    animation: slide 3s infinite;
 }
 
-@keyframes shimmer {
+@keyframes slide {
     0% { left: -100%; }
     100% { left: 100%; }
 }
 
-.update-time {
+/* Última actualización */
+.last-updated {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     color: #95a5a6;
-    font-size: 12px;
-    text-align: center;
-    font-weight: 400;
+    font-size: 13px;
+    margin-top: 12px;
+    justify-content: center;
 }
 
-.update-time i {
+.last-updated i {
     color: #f7931e;
+    font-size: 12px;
 }
 
-/* Responsividad mejorada */
+/* Responsividad */
 @media (max-width: 768px) {
-    .visit-counter-section {
-        padding: 20px 0;
+    .visit-stats-section {
+        padding: 25px 0;
     }
     
-    .visit-counter-card {
-        padding: 15px 20px;
+    .stats-wrapper {
+        padding: 20px;
         margin: 0 15px;
     }
     
-    .visit-info {
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-    
-    .popularity-section {
-        padding-left: 0;
+    .visit-main-info {
+        flex-direction: column;
         text-align: center;
+        gap: 15px;
+        margin-bottom: 25px;
     }
     
-    .visit-count {
-        font-size: 24px;
+    .visit-icon-bg {
+        width: 60px;
+        height: 60px;
     }
     
-    .visit-icon {
-        width: 45px;
-        height: 45px;
+    .visit-icon-bg i {
+        font-size: 20px;
     }
     
-    .visit-icon i {
-        font-size: 18px;
+    .visit-pulse {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .visit-number {
+        font-size: 32px;
+    }
+    
+    .visit-title {
+        font-size: 16px;
+    }
+    
+    .progress-info {
+        text-align: center;
     }
 }
 
 @media (max-width: 480px) {
-    .visit-counter-card {
-        margin: 0 10px;
+    .stats-wrapper {
         padding: 15px;
+        margin: 0 10px;
     }
     
-    .visit-info {
-        gap: 10px;
+    .visit-number {
+        font-size: 28px;
     }
     
-    .visit-count {
-        font-size: 22px;
+    .visit-icon-bg {
+        width: 55px;
+        height: 55px;
     }
-}
-
-/* Integración con el tema oscuro del sitio */
-body.dark-theme .visit-counter-section,
-.footer_section + .visit-counter-section {
-    border-top-color: #f7931e;
+    
+    .visit-pulse {
+        width: 55px;
+        height: 55px;
+    }
 }
 
 /* Animación de entrada */
-.visit-counter-section {
-    animation: slideUp 0.6s ease-out;
+.visit-stats-section {
+    animation: fadeInUp 0.8s ease-out;
 }
 
-@keyframes slideUp {
+@keyframes fadeInUp {
     from {
         opacity: 0;
         transform: translateY(30px);
@@ -271,10 +395,15 @@ body.dark-theme .visit-counter-section,
     }
 }
 
-/* Efecto hover en móviles */
-@media (hover: none) {
-    .visit-counter-card:active {
-        transform: scale(0.98);
-    }
+/* Efectos hover adicionales */
+.stats-wrapper:hover .visit-icon-bg {
+    transform: scale(1.05);
+    box-shadow: 
+        0 15px 30px rgba(247, 147, 30, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.stats-wrapper:hover .progress-fill {
+    box-shadow: 0 0 20px rgba(247, 147, 30, 0.5);
 }
 </style>
