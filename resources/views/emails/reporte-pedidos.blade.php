@@ -175,7 +175,7 @@
                         <td>{{ \Carbon\Carbon::parse($pedido->fecha)->format('d/m/Y H:i') }}</td>
                         <td>
                             @if($pedido->cliente && $pedido->cliente->persona)
-                                {{ $pedido->cliente->persona->nombres }} {{ $pedido->cliente->persona->apellidos }}
+                                {{ $pedido->cliente->persona->nombre }} {{ $pedido->cliente->persona->paterno }}{{ $pedido->cliente->persona->materno ? ' '.$pedido->cliente->persona->materno : '' }}
                             @else
                                 Cliente no disponible
                             @endif
@@ -198,7 +198,7 @@
                         </td>
                         <td>
                             @if($pedido->repartidor && $pedido->repartidor->persona)
-                                {{ $pedido->repartidor->persona->nombres }} {{ $pedido->repartidor->persona->apellidos }}
+                                {{ $pedido->repartidor->persona->nombre }} {{ $pedido->repartidor->persona->paterno }}{{ $pedido->repartidor->persona->materno ? ' '.$pedido->repartidor->persona->materno : '' }}
                             @else
                                 No asignado
                             @endif
