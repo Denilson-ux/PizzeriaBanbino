@@ -44,6 +44,27 @@
         .preview-btn:hover {
             background: linear-gradient(135deg, #20c997, #17a2b8);
         }
+        
+        /* Estilos corregidos para el select de clientes */
+        .form-select {
+            color: #212529 !important;
+            background-color: #fff !important;
+        }
+        
+        .form-select option {
+            color: #212529 !important;
+            background-color: #fff !important;
+        }
+        
+        .form-select:focus option {
+            color: #212529 !important;
+            background-color: #fff !important;
+        }
+        
+        .form-select:valid,
+        .form-select:invalid {
+            color: #212529 !important;
+        }
     </style>
 </head>
 <body class="bg-light">
