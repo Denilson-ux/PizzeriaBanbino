@@ -23,7 +23,10 @@ class EmailController extends Controller
         $clientes = Cliente::with('persona')->get()->map(function($cliente) {
             return [
                 'id' => $cliente->id_cliente,
-                'nombre' => $cliente->persona ? $cliente->persona->nombres . ' ' . $cliente->persona->apellidos : 'Sin nombre'
+                'nombre' => $cliente->persona ? trim(
+                    $cliente->persona->nombre . ' ' . $cliente->persona->paterno .
+                    ($cliente->persona->materno ? ' ' . $cliente->persona->materno : '')
+                ) : 'Sin nombre'
             ];
         });
 
@@ -82,7 +85,9 @@ class EmailController extends Controller
             if ($request->cliente_id) {
                 $cliente = Cliente::with('persona')->find($request->cliente_id);
                 $clienteNombre = $cliente && $cliente->persona ? 
-                    $cliente->persona->nombres . ' ' . $cliente->persona->apellidos : 'Cliente desconocido';
+                    trim($cliente->persona->nombre . ' ' . $cliente->persona->paterno .
+                        ($cliente->persona->materno ? ' ' . $cliente->persona->materno : ''))
+                    : 'Cliente desconocido';
             }
 
             // Crear el mailable
@@ -138,7 +143,9 @@ class EmailController extends Controller
         if ($request->cliente_id) {
             $cliente = Cliente::with('persona')->find($request->cliente_id);
             $clienteNombre = $cliente && $cliente->persona ? 
-                $cliente->persona->nombres . ' ' . $cliente->persona->apellidos : 'Cliente desconocido';
+                trim($cliente->persona->nombre . ' ' . $cliente->persona->paterno .
+                    ($cliente->persona->materno ? ' ' . $cliente->persona->materno : ''))
+                : 'Cliente desconocido';
         }
 
         // Crear el mailable y retornar la vista directamente
