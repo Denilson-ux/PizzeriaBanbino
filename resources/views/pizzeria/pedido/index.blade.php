@@ -27,6 +27,11 @@
             <li class="nav-item"><a class="nav-link" href="#pedido-rechazado-tab"
                 data-toggle="tab"><i class="fas fa-times"></i>&nbsp;&nbsp;Rechazados</a>
             </li>
+            <!-- Botón de Reporte de Pedidos -->
+            <a href="http://127.0.0.1:8000/admin/correos/reportes" class="btn btn-primary ml-3" target="_blank">
+            <i class="fas fa-file-alt"></i> Reporte de Pedidos
+            </a>
+
         </ul>
     </div>
 </div>
