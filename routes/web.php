@@ -110,11 +110,16 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('api/compras/almacenes', [CompraController::class, 'getAlmacenes'])->name('compras.get_almacenes');
     Route::get('api/compras/stock-por-almacen', [CompraController::class, 'getStockPorAlmacen'])->name('compras.stock_por_almacen');
 
-    /* Sistema de Correos para Reportes */
+    /* Sistema de Correos para Reportes de Pedidos */
     Route::get('correos/reportes', [EmailController::class, 'mostrarFormulario'])->name('email.formulario');
     Route::post('correos/enviar-reporte', [EmailController::class, 'enviarReportePedidos'])->name('email.enviar-reporte');
     Route::get('correos/preview-reporte', [EmailController::class, 'previewReporte'])->name('email.preview-reporte');
     Route::get('correos/test-conexion', [EmailController::class, 'testConexion'])->name('email.test-conexion');
+
+    /* Sistema de Correos para Reportes de Compras */
+    Route::get('correos/reportes-compras', [EmailController::class, 'mostrarFormularioCompras'])->name('email.formulario-compras');
+    Route::post('correos/enviar-reporte-compras', [EmailController::class, 'enviarReporteCompras'])->name('email.enviar-reporte-compras');
+    Route::get('correos/preview-reporte-compras', [EmailController::class, 'previewReporteCompras'])->name('email.preview-reporte-compras');
 
     // Recetas (incluidas directamente)
     require __DIR__.'/recetas.php';
