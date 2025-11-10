@@ -65,6 +65,9 @@
                         <i class="fas fa-shopping-basket"></i> Lista de Compras
                     </h3>
                     <div class="card-tools">
+                        <a href="{{ route('email.formulario-compras') }}" class="btn btn-info mr-2" title="Generar reporte de compras por correo">
+                            <i class="fas fa-envelope"></i> Enviar Reporte
+                        </a>
                         <a href="{{ route('compras.create') }}" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Nueva Compra
                         </a>
