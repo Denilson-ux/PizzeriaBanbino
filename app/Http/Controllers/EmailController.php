@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Mail\ReportePedidos;
+use App\Mail\ReporteCompras;
 use App\Models\Pedido;
 use App\Models\Cliente;
 use App\Models\Persona;
+use App\Models\Compra;
+use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -31,6 +34,26 @@ class EmailController extends Controller
         });
 
         return view('emails.formulario-envio', compact('clientes'));
+    }
+
+    /**
+     * Mostrar el formulario para enviar reportes de compras
+     */
+    public function mostrarFormularioCompras()
+    {
+        // Obtener lista de proveedores para el selector
+        $proveedores = Proveedor::where('estado', 'activo')
+            ->orderBy('nombre')
+            ->get()
+            ->map(function($proveedor) {
+                return [
+                    'id' => $proveedor->id_proveedor,
+                    'nombre' => $proveedor->nombre,
+                    'ruc' => $proveedor->ruc
+                ];
+            });
+
+        return view('emails.formulario-compras', compact('proveedores'));
     }
 
     /**
@@ -116,7 +139,85 @@ class EmailController extends Controller
     }
 
     /**
-     * Preview del email (para testing)
+     * Enviar reporte de compras por correo
+     */
+    public function enviarReporteCompras(Request $request)
+    {
+        // Validar los datos del formulario
+        $validator = Validator::make($request->all(), [
+            'destinatarios' => 'required|string',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'proveedor_id' => 'nullable|exists:proveedores,id_proveedor',
+            'asunto' => 'nullable|string|max:255',
+        ], [
+            'destinatarios.required' => 'Debe especificar al menos un destinatario',
+            'fecha_inicio.required' => 'La fecha de inicio es requerida',
+            'fecha_fin.required' => 'La fecha de fin es requerida',
+            'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la fecha de inicio',
+            'proveedor_id.exists' => 'El proveedor seleccionado no es válido'
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            // Procesar destinatarios (separados por coma)
+            $destinatarios = array_map('trim', explode(',', $request->destinatarios));
+            
+            // Validar formato de emails
+            foreach ($destinatarios as $email) {
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    return back()->withErrors(['destinatarios' => "El email '{$email}' no tiene un formato válido"])->withInput();
+                }
+            }
+
+            // Construir consulta de compras
+            $query = Compra::with(['proveedor', 'usuario', 'almacenDestino', 'detalles.ingrediente'])
+                          ->whereBetween('fecha_compra', [$request->fecha_inicio, $request->fecha_fin]);
+
+            // Filtrar por proveedor si se especifica
+            if ($request->proveedor_id) {
+                $query->where('id_proveedor', $request->proveedor_id);
+            }
+
+            $compras = $query->orderBy('fecha_compra', 'desc')->get();
+
+            // Obtener nombre del proveedor si se filtró
+            $proveedorNombre = null;
+            if ($request->proveedor_id) {
+                $proveedor = Proveedor::find($request->proveedor_id);
+                $proveedorNombre = $proveedor ? $proveedor->nombre : 'Proveedor desconocido';
+            }
+
+            // Crear el mailable
+            $reporte = new ReporteCompras(
+                $compras,
+                $request->fecha_inicio,
+                $request->fecha_fin,
+                $proveedorNombre
+            );
+
+            // Enviar email a cada destinatario
+            foreach ($destinatarios as $destinatario) {
+                Mail::to($destinatario)->send($reporte);
+            }
+
+            // Mensaje de éxito
+            $mensaje = "Reporte de compras enviado exitosamente a " . count($destinatarios) . " destinatario(s).";
+            $mensaje .= " Se encontraron {$compras->count()} compras en el período especificado.";
+            
+            return back()->with('success', $mensaje);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al enviar reporte de compras: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Ocurrió un error al enviar el correo. Por favor, verifique la configuración del servidor de correo.'])->withInput();
+        }
+    }
+
+    /**
+     * Preview del email de pedidos (para testing)
      */
     public function previewReporte(Request $request)
     {
@@ -154,6 +255,47 @@ class EmailController extends Controller
             $request->fecha_inicio,
             $request->fecha_fin,
             $clienteNombre
+        );
+
+        // Retornar la vista del email directamente para preview
+        return $reporte->render();
+    }
+
+    /**
+     * Preview del email de compras (para testing)
+     */
+    public function previewReporteCompras(Request $request)
+    {
+        // Validar parámetros básicos
+        $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'proveedor_id' => 'nullable|exists:proveedores,id_proveedor',
+        ]);
+
+        // Obtener compras con los mismos criterios
+        $query = Compra::with(['proveedor', 'usuario', 'almacenDestino', 'detalles.ingrediente'])
+                      ->whereBetween('fecha_compra', [$request->fecha_inicio, $request->fecha_fin]);
+
+        if ($request->proveedor_id) {
+            $query->where('id_proveedor', $request->proveedor_id);
+        }
+
+        $compras = $query->orderBy('fecha_compra', 'desc')->get();
+
+        // Obtener nombre del proveedor si se filtró
+        $proveedorNombre = null;
+        if ($request->proveedor_id) {
+            $proveedor = Proveedor::find($request->proveedor_id);
+            $proveedorNombre = $proveedor ? $proveedor->nombre : 'Proveedor desconocido';
+        }
+
+        // Crear el mailable y retornar la vista directamente
+        $reporte = new ReporteCompras(
+            $compras,
+            $request->fecha_inicio,
+            $request->fecha_fin,
+            $proveedorNombre
         );
 
         // Retornar la vista del email directamente para preview
