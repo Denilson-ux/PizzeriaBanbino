@@ -127,6 +127,61 @@
             border-color: #e55a2e;
             background: #fff5f3;
         }
+
+        /* Estilos para el buscador */
+        .search-form {
+            position: relative;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+        
+        .search-form input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 2px solid #ff6b35;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-form input:focus {
+            outline: none;
+            border-color: #f7931e;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+        
+        .search-form button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .search-form button:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 3px 10px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Ajustes de responsive para el navbar */
+        @media (max-width: 991px) {
+            .search-form {
+                margin: 15px 0;
+                max-width: 100%;
+            }
+        }
     </style>
 
 </head>
@@ -164,6 +219,15 @@
               <a class="nav-link" href="{{asset('/form')}}" id="registrarme-nav">Registrarme</a>
             </li>
           </ul>
+
+          <!-- Barra de búsqueda -->
+          <form class="search-form" id="search-form" onsubmit="return false;">
+            <input type="text" id="search-input" placeholder="Buscar pizzas, productos..." autocomplete="off">
+            <button type="button" id="search-button">
+              <i class="fa fa-search"></i>
+            </button>
+          </form>
+
           <div class="dropdown" id="dropdwn-user">
             <button class="btn btn-sm btn-dark dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="text-white"><i class="fa fa-user" aria-hidden="true"></i></span>
@@ -187,14 +251,6 @@
             <a class="btn btn-sm user_link" href="alg" data-toggle="modal" data-target="#carritoModal">
               <i class="fa fa-shopping-cart" aria-hidden="true"></i>
             </a>
-            {{-- <form class="form-inline">
-              <button class="btn my-2 my-sm-0 nav_search-btn" type="submit">
-                <i class="fa fa-search" aria-hidden="true"></i>
-              </button>
-            </form> --}}
-            {{-- <a href="" class="order_online text-center">
-              Ordene en línea
-            </a> --}}
           </div>
         </div>
       </nav>
@@ -385,6 +441,7 @@
   {{-- parametros --}}
   <script src="{{asset('/pizzeria/js/parametros.js')}}"></script>
   <script src="{{asset('/pizzeria/js/cliente_web/nav.js')}}"></script>
+  <script src="{{asset('/pizzeria/js/cliente_web/search.js')}}"></script>
 
   @yield('clienteweb-js')
 </body>
